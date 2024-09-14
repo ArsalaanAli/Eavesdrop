@@ -1,2 +1,6 @@
 .env
 .venv
+backend/__pycache__
+backend/models
+backend/venv/bin
+backend/venv
