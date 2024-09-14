@@ -97,13 +97,13 @@ def push_stream_writer(stream):
     """Push audio data from the queue to the stream."""
     try:
         while True:
-            if not raw_queue.empty():
-                audio_chunk = raw_queue.get()
+            if not audio_queue.empty():
+                audio_chunk = audio_queue.get()
                 print('read {} bytes'.format(len(audio_chunk)))
                 if not audio_chunk:
                     break
                 stream.write(audio_chunk)
-                raw_queue.task_done()
+                audio_queue.task_done()
             else:
                 time.sleep(0.1)  # Adjust sleep time as needed
     finally:
