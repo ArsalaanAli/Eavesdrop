@@ -12,6 +12,8 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 raw_queue = Queue()
 audio_queue = Queue()
 
+index = 0
+
 @socketio.on('connect')
 def handle_connect():
     print('Client connected')
@@ -45,7 +47,8 @@ def process_raw_queue():
                 raw_data = raw_queue.get()
             else:
                 break  # Exit the loop if we have leftover data for next iteration
-        socketio.emit('transcript' , "test ")
+        socketio.emit('transcript' , f"{index},test ")
+        index += len("text ")
         # If there's any data left in the buffer, keep it for the next call
         if buffer:
             raw_queue.put(buffer)
