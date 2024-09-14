@@ -61,7 +61,7 @@ def producer_thread():
 
 
 # Thread which gets items from the queue and prints its length
-def consumer_thread(stats):
+def consumer_thread():
     while True:
         if length_queue.qsize() >= LENGHT_IN_SEC:
             with length_queue.mutex:
@@ -103,14 +103,6 @@ def consumer_thread(stats):
         print(transcription, end='\r', flush=True)
 
         audio_queue.task_done()
-
-        overall_elapsed_time = transcription_postprocessing_end_time - transcription_start_time
-        transcription_elapsed_time = transcription_end_time - transcription_start_time
-        postprocessing_elapsed_time = transcription_postprocessing_end_time - transcription_end_time
-        stats["overall"].append(overall_elapsed_time)
-        stats["transcription"].append(transcription_elapsed_time)
-        stats["postprocessing"].append(postprocessing_elapsed_time)
-
 
 if __name__ == "__main__":
     stats: Dict[str, List[float]] = {"overall": [], "transcription": [], "postprocessing": []}
