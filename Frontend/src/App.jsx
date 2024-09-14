@@ -1,8 +1,8 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEffect, useRef, useState } from "react";
-import { GetHighlightedTranscript } from "./lib/helpers";
 import { Button } from "./components/ui/button";
+import { GetHighlightedTranscript } from "./lib/helpers";
 
 export default function App() {
   const [transcript, setTranscript] = useState(
@@ -40,10 +40,7 @@ export default function App() {
       </div>
       <ScrollArea className="h-full bg-gray-800 border-l border-r border-gray-700 p-6">
         <h2 className="text-2xl font-bold mb-4">Lorem Ipsum</h2>
-        <p
-          className="mb-4"
-          dangerouslySetInnerHTML={{ __html: highlightedTranscript }}
-        ></p>
+        {highlightedTranscript}
       </ScrollArea>
       <div className="bg-gray-800 p-4 overflow-auto">
         <div className="grid gap-4">
@@ -83,7 +80,6 @@ export default function App() {
                   {
                     start: 17,
                     end: 25,
-                    iteration: curIteration.current + 1,
                     type: "true",
                   },
                 ]);
