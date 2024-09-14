@@ -4,7 +4,10 @@ from queue import Queue
 import numpy as np
 import threading
 import re
-from faster_whisper import WhisperModel
+from dotenv import load_dotenv
+import os
+import time
+import azure.cognitiveservices.speech as speechsdk
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -29,7 +32,7 @@ def process_raw_queue():
     while True:
         raw_data = raw_queue.get()
         buffer = b''
-        target_length = 50  # 1 second at 16kHz
+        target_length = 100  # 1 second at 16kHz
         buffer += raw_data
         while len(buffer) >= target_length:
             # Extract exactly target_length samples
@@ -51,6 +54,102 @@ def process_raw_queue():
             raw_queue.put(buffer)
 
 
+def consumer_thread():
+    """Consumer thread that processes audio bytes from the queue and transcribes them in real-time."""
+    load_dotenv()
+    speech_config = speechsdk.SpeechConfig(subscription=os.getenv("SPEECH_KEY"), region=os.getenv("SPEECH_REGION"))
+
+    # Setup the audio stream
+    stream = speechsdk.audio.PushAudioInputStream()
+    audio_config = speechsdk.audio.AudioConfig(stream=stream)
+
+    # Instantiate the speech recognizer with push stream input
+    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
+
+    # def recognizing_cb(evt: speechsdk.SpeechRecognitionEventArgs):
+    #     print(evt.result.text)
+
+    def recognized_cb(evt: speechsdk.SpeechRecognitionEventArgs):
+        print(evt.result.text)
+
+    def stop_cb(evt: speechsdk.SessionEventArgs):
+        """callback that signals to stop continuous recognition"""
+        print('CLOSING on {}'.format(evt))
+
+    # Connect callbacks to the events fired by the speech recognizer
+    # speech_recognizer.recognizing.connect(recognizing_cb)
+    speech_recognizer.recognized.connect(recognized_cb)
+    speech_recognizer.session_started.connect(lambda evt: print('SessionStarted event'))
+    speech_recognizer.session_stopped.connect(stop_cb)
+    speech_recognizer.canceled.connect(stop_cb)
+
+    # Start continuous speech recognition -- turning off for now
+    # speech_recognizer.start_continuous_recognition() 
+
+    # Push audio data from the queue to the PushAudioInputStream
+    push_stream_writer(stream)
+
+    # Stop recognition (this should be called when you want to stop recognition)
+    speech_recognizer.stop_continuous_recognition()
+
+
+def push_stream_writer(stream):
+    """Push audio data from the queue to the stream."""
+    try:
+        while True:
+            if not raw_queue.empty():
+                audio_chunk = raw_queue.get()
+                print('read {} bytes'.format(len(audio_chunk)))
+                if not audio_chunk:
+                    break
+                stream.write(audio_chunk)
+                raw_queue.task_done()
+            else:
+                time.sleep(0.1)  # Adjust sleep time as needed
+    finally:
+        stream.close()  # must be done to signal the end of stream
+
+def speech_recognition_with_push_stream():
+    """gives an example how to use a push audio stream to recognize speech from a custom audio
+    source"""
+    load_dotenv()
+    speech_config = speechsdk.SpeechConfig(subscription=os.getenv("SPEECH_KEY"), region=os.getenv("SPEECH_REGION"))
+
+    # Setup the audio stream
+    stream = speechsdk.audio.PushAudioInputStream()
+    audio_config = speechsdk.audio.AudioConfig(stream=stream)
+
+    # Instantiate the speech recognizer with push stream input
+    speech_recognizer = speechsdk.SpeechRecognizer(speech_config=speech_config, audio_config=audio_config)
+    recognition_done = threading.Event()
+
+    # Connect callbacks to the events fired by the speech recognizer
+    def session_stopped_cb(evt):
+        """callback that signals to stop continuous recognition upon receiving an event `evt`"""
+        print('SESSION STOPPED: {}'.format(evt))
+        recognition_done.set()
+
+    speech_recognizer.recognizing.connect(lambda evt: print('RECOGNIZING: {}'.format(evt)))
+    speech_recognizer.recognized.connect(lambda evt: print('RECOGNIZED: {}'.format(evt)))
+    speech_recognizer.session_started.connect(lambda evt: print('SESSION STARTED: {}'.format(evt)))
+    speech_recognizer.session_stopped.connect(session_stopped_cb)
+    speech_recognizer.canceled.connect(lambda evt: print('CANCELED {}'.format(evt)))
+
+    # Start push stream writer thread
+    push_stream_writer_thread = threading.Thread(target=push_stream_writer, args=[stream])
+    push_stream_writer_thread.start()
+
+    # Start continuous speech recognition
+    speech_recognizer.start_continuous_recognition()
+
+    # Wait until all input processed
+    recognition_done.wait()
+
+    # Stop recognition and clean up
+    speech_recognizer.stop_continuous_recognition()
+    push_stream_writer_thread.join()
+
+
 @app.route('/check', methods=['POST'])
 def check_text():
     data = request.json
@@ -60,4 +159,6 @@ def check_text():
 if __name__ == '__main__':
     # Start the audio processing thread
     threading.Thread(target=process_raw_queue, daemon=True).start()
+    threading.Thread(target=consumer_thread, daemon=True).start()
+    # threading.thread(target=send_chunk, args=(audio_queue,), daemon=True).start()
     socketio.run(app, debug=True, host='127.0.0.1', port=5000)
