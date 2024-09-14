@@ -29,18 +29,11 @@ def process_raw_queue():
     while True:
         raw_data = raw_queue.get()
         buffer = b''
-        target_length = 16000  # 1 second at 16kHz
+        target_length = 50  # 1 second at 16kHz
         buffer += raw_data
-        # print(f"buffer {buffer}")
         while len(buffer) >= target_length:
             # Extract exactly target_length samples
             chunk = buffer[:target_length]
-            
-            # Convert chunk to numpy array
-            # audio_np = np.frombuffer(chunk, dtype=np.int16)
-            
-            # Convert back to bytes
-            # processed_audio = audio_np.tobytes()
             
             # Put processed audio in the queue
             audio_queue.put(chunk)
