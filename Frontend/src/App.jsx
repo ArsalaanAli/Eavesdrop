@@ -7,6 +7,7 @@ export default function Component() {
   const [isRecording, setIsRecording] = useState(false)
   const [transcript, setTranscript] = useState("")
   const [metadata, setMetadata] = useState("")
+  const idx = useRef(-1)
 
   const mediaRecorderRef = useRef(null)
 
@@ -29,23 +30,42 @@ export default function Component() {
 
       socket.on("transcript", (transcript) => {
         console.log("Transcript received:", transcript)
-        setTranscript((prev) => [...prev, transcript])
+        const delimeter = transcript.indexOf(",")
+        const text = transcript.substring(delimeter + 1)
+        if (idx.current === -1) {
+          idx.current = parseInt(transcript.substring(0, delimeter))
+        }
+
+        setTranscript((prev) => [...prev, text])
       })
 
       socket.on("metadata", (metadata) => {
         console.log("Metadata received:", metadata)
-        const sample = {
-          chunk: [0, 15],
-          highlights: [
-            {
-              type: "text",
-              start: 0,
-              end: 15,
-            },
-          ],
+
+        // const sample = {
+        //   highlights: [
+        //     {
+        //       type: "text",
+        //       start: 0,
+        //       end: 15,
+        //     },
+        //   ],
+        // }
+
+        if (idx.current === -1) {
+          setMetadata((prev) => [...prev, metadata])
+          return
         }
 
-        setMetadata((prev) => [...prev, metadata])
+        const newMetadata = metadata.map((m) => {
+          return {
+            ...m,
+            start: m.start - idx.current,
+            end: m.end - idx.current,
+          }
+        })
+
+        setMetadata((prev) => [...prev, newMetadata])
       })
 
       mediaRecorderRef.current.start(100)
@@ -95,6 +115,7 @@ export default function Component() {
                   ? "Recording and streaming audio..."
                   : "Click to start recording and streaming audio."}
               </p>
+              <p>{transcript}</p>
             </CardContent>
           </Card>
           {/* ... existing Card components ... */}
