@@ -1,7 +1,24 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useEffect, useState } from "react";
+import { GetHighlightedTranscript } from "./lib/helpers";
+import { Button } from "./components/ui/button";
 
-export default function Component() {
+export default function App() {
+  const [transcript, setTranscript] = useState(
+    "test text end more rnadom text here i dont know what to write text"
+  );
+
+  const [highlights, setHighlights] = useState([
+    { start: 5, end: 15, iteration: 1 },
+  ]);
+
+  const [highlightedTranscript, setHighlightedTranscript] = useState("");
+
+  useEffect(() => {
+    setHighlightedTranscript(GetHighlightedTranscript(transcript, highlights));
+  }, [highlights]);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 h-screen w-screen bg-gray-900 text-gray-100">
       <div className="relative bg-black">
@@ -16,80 +33,10 @@ export default function Component() {
       </div>
       <ScrollArea className="h-full bg-gray-800 border-l border-r border-gray-700 p-6">
         <h2 className="text-2xl font-bold mb-4">Lorem Ipsum</h2>
-        <p className="mb-4">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam in dui
-          mauris. Vivamus hendrerit arcu sed erat molestie vehicula. Sed auctor
-          neque eu tellus rhoncus ut eleifend nibh porttitor. Ut in nulla enim.
-          Phasellus molestie magna non est bibendum non venenatis nisl tempor.
-          Suspendisse dictum feugiat nisl ut dapibus. Mauris iaculis porttitor
-          posuere. Praesent id metus massa, ut blandit odio. Proin quis tortor
-          orci. Etiam at risus et justo dignissim congue. Donec congue lacinia
-          dui, a porttitor lectus condimentum laoreet. Nunc eu ullamcorper orci.
-          Quisque eget odio ac lectus vestibulum faucibus eget in metus. In
-          pellentesque faucibus vestibulum. Nulla at nulla justo, eget luctus
-          tortor.
-        </p>
-        <p className="mb-4">
-          Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-          dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-          proident, sunt in culpa qui officia deserunt mollit anim id est
-          laborum. Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed
-          do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim
-          ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat.
-        </p>
-        <p>
-          Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam
-          varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus
-          magna felis sollicitudin mauris. Integer in mauris eu nibh euismod
-          gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis
-          risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue,
-          eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas
-          fermentum consequat mi. Donec fermentum. Pellentesque malesuada nulla
-          a mi. Duis sapien sem, aliquet nec, commodo eget, consequat quis,
-          neque. Aliquam faucibus, elit ut dictum aliquet, felis nisl adipiscing
-          sapien, sed malesuada diam lacus eget erat. Cras mollis scelerisque
-          nunc. Nullam arcu. Aliquam consequat.
-        </p>
-        <p>
-          Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam
-          varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus
-          magna felis sollicitudin mauris. Integer in mauris eu nibh euismod
-          gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis
-          risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue,
-          eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas
-          fermentum consequat mi. Donec fermentum. Pellentesque malesuada nulla
-          a mi. Duis sapien sem, aliquet nec, commodo eget, consequat quis,
-          neque. Aliquam faucibus, elit ut dictum aliquet, felis nisl adipiscing
-          sapien, sed malesuada diam lacus eget erat. Cras mollis scelerisque
-          nunc. Nullam arcu. Aliquam consequat.
-        </p>
-        <p>
-          Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam
-          varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus
-          magna felis sollicitudin mauris. Integer in mauris eu nibh euismod
-          gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis
-          risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue,
-          eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas
-          fermentum consequat mi. Donec fermentum. Pellentesque malesuada nulla
-          a mi. Duis sapien sem, aliquet nec, commodo eget, consequat quis,
-          neque. Aliquam faucibus, elit ut dictum aliquet, felis nisl adipiscing
-          sapien, sed malesuada diam lacus eget erat. Cras mollis scelerisque
-          nunc. Nullam arcu. Aliquam consequat.
-        </p>
-        <p>
-          Curabitur pretium tincidunt lacus. Nulla gravida orci a odio. Nullam
-          varius, turpis et commodo pharetra, est eros bibendum elit, nec luctus
-          magna felis sollicitudin mauris. Integer in mauris eu nibh euismod
-          gravida. Duis ac tellus et risus vulputate vehicula. Donec lobortis
-          risus a elit. Etiam tempor. Ut ullamcorper, ligula eu tempor congue,
-          eros est euismod turpis, id tincidunt sapien risus a quam. Maecenas
-          fermentum consequat mi. Donec fermentum. Pellentesque malesuada nulla
-          a mi. Duis sapien sem, aliquet nec, commodo eget, consequat quis,
-          neque. Aliquam faucibus, elit ut dictum aliquet, felis nisl adipiscing
-          sapien, sed malesuada diam lacus eget erat. Cras mollis scelerisque
-          nunc. Nullam arcu. Aliquam consequat.
-        </p>
+        <p
+          className="mb-4"
+          dangerouslySetInnerHTML={{ __html: highlightedTranscript }}
+        ></p>
       </ScrollArea>
       <div className="bg-gray-800 p-4 overflow-auto">
         <div className="grid gap-4">
@@ -122,6 +69,13 @@ export default function Component() {
                 You can add more boxes or other components in this column.
               </p>
             </CardContent>
+            <Button
+              onClick={() => {
+                setHighlights([...highlights, [17, 25]]);
+              }}
+            >
+              PRESS HERE
+            </Button>
           </Card>
         </div>
       </div>
