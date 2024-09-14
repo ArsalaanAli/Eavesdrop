@@ -1,7 +1,7 @@
 def check_text(text):
 
     
-    return {
+    return [{
         "truthiness": 0.5,
         "context": "context",
         "citations": ["citation1", "citation2"],
@@ -9,4 +9,4 @@ def check_text(text):
             "start": 0,
             "end": 0
         }
-    }
+    }]
