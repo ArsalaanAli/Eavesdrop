@@ -1,4 +1,6 @@
 def check_text(text):
+
+    
     return {
         "truthiness": 0.5,
         "context": "context",
