@@ -52,8 +52,8 @@ def process_raw_queue():
         stosend = ""
         for i in range(random.randint(5, 40)):
             stosend += chr(random.randint(48, 90))
-        socketio.emit('transcript' , f"{index},test ")
-        index += len("text ")
+        socketio.emit('transcript' , f"{index},{stosend} ")
+        index += len(stosend) + 1
         # If there's any data left in the buffer, keep it for the next call
         if buffer:
             raw_queue.put(buffer)
