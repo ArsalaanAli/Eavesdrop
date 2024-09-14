@@ -1,7 +1,18 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import {
+  useSpeechRecognition,
+  SpeechRecognition,
+} from "react-speech-recognition"
 
 export default function Component() {
+  const {
+    transcript,
+    listening,
+    resetTranscript,
+    browserSupportsSpeechRecognition,
+  } = useSpeechRecognition()
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 h-screen w-screen bg-gray-900 text-gray-100">
       <div className="relative bg-black">
@@ -16,19 +27,7 @@ export default function Component() {
       </div>
       <ScrollArea className="h-full bg-gray-800 border-l border-r border-gray-700 p-6">
         <h2 className="text-2xl font-bold mb-4">Lorem Ipsum</h2>
-        <p className="mb-4">
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam in dui
-          mauris. Vivamus hendrerit arcu sed erat molestie vehicula. Sed auctor
-          neque eu tellus rhoncus ut eleifend nibh porttitor. Ut in nulla enim.
-          Phasellus molestie magna non est bibendum non venenatis nisl tempor.
-          Suspendisse dictum feugiat nisl ut dapibus. Mauris iaculis porttitor
-          posuere. Praesent id metus massa, ut blandit odio. Proin quis tortor
-          orci. Etiam at risus et justo dignissim congue. Donec congue lacinia
-          dui, a porttitor lectus condimentum laoreet. Nunc eu ullamcorper orci.
-          Quisque eget odio ac lectus vestibulum faucibus eget in metus. In
-          pellentesque faucibus vestibulum. Nulla at nulla justo, eget luctus
-          tortor.
-        </p>
+        <p className="mb-4">{transcript}</p>
         <p className="mb-4">
           Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
           dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
@@ -123,8 +122,24 @@ export default function Component() {
               </p>
             </CardContent>
           </Card>
+          <Card className="bg-gray-700 border-gray-600">
+            <CardHeader>
+              <CardTitle className="text-gray-100">Box 3</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div>
+                <p>Microphone: {listening ? "on" : "off"}</p>
+                <button onClick={SpeechRecognition.startListening}>
+                  Start
+                </button>
+                <button onClick={SpeechRecognition.stopListening}>Stop</button>
+                <button onClick={resetTranscript}>Reset</button>
+                <p>{transcript}</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
-  );
+  )
 }
