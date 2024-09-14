@@ -5,6 +5,7 @@ import numpy as np
 import threading
 import re
 from faster_whisper import WhisperModel
+import random
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -48,6 +49,9 @@ def process_raw_queue():
                 raw_data = raw_queue.get()
             else:
                 break  # Exit the loop if we have leftover data for next iteration
+        stosend = ""
+        for i in range(random.randint(5, 40)):
+            stosend += chr(random.randint(48, 90))
         socketio.emit('transcript' , f"{index},test ")
         index += len("text ")
         # If there's any data left in the buffer, keep it for the next call
