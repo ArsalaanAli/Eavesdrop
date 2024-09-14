@@ -10,10 +10,10 @@ export default function App() {
   );
 
   const [highlights, setHighlights] = useState([
-    { start: 5, end: 15, iteration: 0, type: "false" },
+    { start: 5, end: 15, type: "false" },
   ]);
 
-  const [highlightedTranscript, setHighlightedTranscript] = useState("");
+  const [highlightedTranscript, setHighlightedTranscript] = useState([]);
 
   var curIteration = useRef(0);
 
@@ -44,26 +44,19 @@ export default function App() {
       </ScrollArea>
       <div className="bg-gray-800 p-4 overflow-auto">
         <div className="grid gap-4">
-          <Card className="bg-gray-700 border-gray-600">
-            <CardHeader>
-              <CardTitle className="text-gray-100">Box 1</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-300">
-                This is an empty box. You can add content here.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="bg-gray-700 border-gray-600">
-            <CardHeader>
-              <CardTitle className="text-gray-100">Box 2</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-300">
-                This is another empty box. Feel free to customize it.
-              </p>
-            </CardContent>
-          </Card>
+          {highlights.map((high) => (
+            <Card className={CardStyles[high.type]}>
+              <CardHeader>
+                <CardTitle className="text-gray-100">Box 1</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-300">
+                  This is an empty box. You can add content here.
+                </p>
+              </CardContent>
+            </Card>
+          ))}
+
           <Card className="bg-gray-700 border-gray-600">
             <CardHeader>
               <CardTitle className="text-gray-100">Box 3</CardTitle>
@@ -75,14 +68,16 @@ export default function App() {
             </CardContent>
             <Button
               onClick={() => {
-                setHighlights([
-                  ...highlights,
-                  {
-                    start: 17,
-                    end: 25,
-                    type: "true",
-                  },
-                ]);
+                setHighlights(
+                  [
+                    ...highlights,
+                    {
+                      start: 17,
+                      end: 25,
+                      type: "true",
+                    },
+                  ].sort((a, b) => a.start - b.start)
+                );
               }}
             >
               PRESS HERE
@@ -93,3 +88,11 @@ export default function App() {
     </div>
   );
 }
+
+const CardStyles = {
+  false:
+    "border-2 border-red-500 bg-red-500 bg-opacity-50 rounded-lg animate-in",
+  true: "border-2 border-green-500 bg-green-500 bg-opacity-50 rounded-lg animate-in",
+  context:
+    "border-2 border-blue-500 bg-blue-500 bg-opacity-50 rounded-lg animate-in",
+};

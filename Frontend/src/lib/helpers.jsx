@@ -49,7 +49,6 @@ export const GetHighlightedTranscript = (
   if (lastIndex < transcript.length) {
     result.push(transcript.slice(lastIndex));
   }
-  console.log(result);
   return <div>{result}</div>;
 };
 
