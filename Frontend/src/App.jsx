@@ -5,6 +5,9 @@ import { socket } from "./lib/socket"
 
 export default function Component() {
   const [isRecording, setIsRecording] = useState(false)
+  const [transcript, setTranscript] = useState("")
+  const [metadata, setMetadata] = useState("")
+
   const mediaRecorderRef = useRef(null)
 
   useEffect(() => {
@@ -23,6 +26,27 @@ export default function Component() {
       mediaRecorderRef.current.onstop = () => {
         socket.disconnect()
       }
+
+      socket.on("transcript", (transcript) => {
+        console.log("Transcript received:", transcript)
+        setTranscript((prev) => [...prev, transcript])
+      })
+
+      socket.on("metadata", (metadata) => {
+        console.log("Metadata received:", metadata)
+        const sample = {
+          chunk: [0, 15],
+          highlights: [
+            {
+              type: "text",
+              start: 0,
+              end: 15,
+            },
+          ],
+        }
+
+        setMetadata((prev) => [...prev, metadata])
+      })
 
       mediaRecorderRef.current.start(100)
     }
