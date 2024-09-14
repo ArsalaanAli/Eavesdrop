@@ -45,7 +45,7 @@ def process_raw_queue():
                 raw_data = raw_queue.get()
             else:
                 break  # Exit the loop if we have leftover data for next iteration
-        
+        socketio.emit('transcript' , "test ")
         # If there's any data left in the buffer, keep it for the next call
         if buffer:
             raw_queue.put(buffer)
