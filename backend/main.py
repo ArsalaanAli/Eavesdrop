@@ -27,6 +27,7 @@ def handle_audio_data(data):
     raw_queue.put(data)
     
 def process_raw_queue():
+    global index
     print("processing")
     while True:
         raw_data = raw_queue.get()
