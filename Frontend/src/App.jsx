@@ -1,6 +1,6 @@
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GetHighlightedTranscript } from "./lib/helpers";
 import { Button } from "./components/ui/button";
 
@@ -10,13 +10,20 @@ export default function App() {
   );
 
   const [highlights, setHighlights] = useState([
-    { start: 5, end: 15, iteration: 1 },
+    { start: 5, end: 15, iteration: 0, type: "false" },
   ]);
 
   const [highlightedTranscript, setHighlightedTranscript] = useState("");
 
+  var curIteration = useRef(0);
+
   useEffect(() => {
-    setHighlightedTranscript(GetHighlightedTranscript(transcript, highlights));
+    curIteration.current += 1;
+    console.log(curIteration.current);
+    console.log(highlights);
+    setHighlightedTranscript(
+      GetHighlightedTranscript(transcript, highlights, curIteration)
+    );
   }, [highlights]);
 
   return (
@@ -71,7 +78,15 @@ export default function App() {
             </CardContent>
             <Button
               onClick={() => {
-                setHighlights([...highlights, [17, 25]]);
+                setHighlights([
+                  ...highlights,
+                  {
+                    start: 17,
+                    end: 25,
+                    iteration: curIteration.current + 1,
+                    type: "true",
+                  },
+                ]);
               }}
             >
               PRESS HERE

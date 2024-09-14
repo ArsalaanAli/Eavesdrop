@@ -5,12 +5,40 @@ export default {
   theme: {
     extend: {
       animation: {
-        "fade-in": "fadeIn 1s ease-out",
+        "bg-fade-red": "bgFadeRed 0.7s ease-in-out",
+        "bg-fade-green": "bgFadeGreen 0.7s ease-in-out",
+        "bg-fade-blue": "bgFadeBlue 0.7s ease-in-out",
       },
       keyframes: {
-        fadeIn: {
-          "0%": { opacity: "0" },
-          "100%": { opacity: "1" },
+        bgFadeGreen: {
+          "0%": {
+            backgroundColor: "rgba(34, 197, 94, 0)",
+            borderColor: "rgba(34, 197, 94, 0)",
+          },
+          "100%": {
+            backgroundColor: "rgba(34, 197, 94, 0.5)",
+            borderColor: "rgba(34, 197, 94, 0.5)",
+          },
+        },
+        bgFadeRed: {
+          "0%": {
+            backgroundColor: "rgba(239, 68, 68, 0)",
+            borderColor: "rgba(239, 68, 68, 0)",
+          },
+          "100%": {
+            backgroundColor: "rgba(239, 68, 68, 0.5)",
+            borderColor: "rgba(239, 68, 68, 0.5)",
+          },
+        },
+        bgFadeBlue: {
+          "0%": {
+            backgroundColor: "rgba(59, 130, 246, 0)",
+            borderColor: "rgba(59, 130, 246, 0)",
+          },
+          "100%": {
+            backgroundColor: "rgba(59, 130, 246, 0.5)",
+            borderColor: "rgba(59, 130, 246, 0.5)",
+          },
         },
       },
       borderRadius: {
