@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useEffect, useRef, useState } from "react"
 import "regenerator-runtime/runtime"
 import { socket } from "./lib/socket"
+import { ResultReason, SpeechConfig, AudioConfig, SpeechRecognizer } from 'microsoft-cognitiveservices-speech-sdk';
 
 export default function Component() {
   const [isRecording, setIsRecording] = useState(false)
@@ -92,6 +93,26 @@ export default function Component() {
     setIsRecording((prev) => !prev)
   }
 
+  async function sttFromMic() {
+    const authToken = process.env.SPEECH_KEY;
+    const region = process.env.SPEECH_REGION;
+    const speechConfig = SpeechConfig.fromAuthorizationToken(authToken, region);
+    speechConfig.speechRecognitionLanguage = 'en-US';
+    
+    const audioConfig = AudioConfig.fromDefaultMicrophoneInput();
+    const recognizer = new SpeechRecognizer(speechConfig, audioConfig);
+
+    setDisplayText('speak into your microphone...');
+
+    recognizer.recognizeOnceAsync(result => {
+        if (result.reason === ResultReason.RecognizedSpeech) {
+            setDisplayText(`RECOGNIZED: Text=${result.text}`);
+        } else {
+            setDisplayText('ERROR: Speech was cancelled or could not be recognized. Ensure your microphone is working properly.');
+        }
+    });
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 h-screen w-screen bg-gray-900 text-gray-100">
       {/* ... existing video and ScrollArea components ... */}
@@ -109,6 +130,9 @@ export default function Component() {
                 }`}
               >
                 {isRecording ? "Stop Recording" : "Start Recording"}
+              </button>
+              <button onClick={sttFromMic}>
+                Convert speech to text from your mic.
               </button>
               <p className="text-gray-300 mt-2">
                 {isRecording
