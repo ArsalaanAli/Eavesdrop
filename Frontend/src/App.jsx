@@ -5,6 +5,7 @@ import { GetHighlightedTranscript } from "./lib/helpers";
 import { socket } from "./lib/socket";
 import logo from "/actually-logo.jpeg";
 import { v4 as uuid } from "uuid";
+import { ScrollArea } from "./components/ui/scroll-area";
 
 const typeToTitle = {
   false: "Be Careful 🚨",
@@ -150,7 +151,9 @@ export default function App() {
           <CardHeader>
             <CardTitle>Transcript</CardTitle>
           </CardHeader>
-          <CardContent>{highlightedTranscript}</CardContent>
+          <CardContent>
+            <ScrollArea>{highlightedTranscript}</ScrollArea>
+          </CardContent>
         </div>
         {/* Metadata */}
         {focused}
