@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { SpeechConfig, AudioConfig, SpeechRecognizer } from 'microsoft-cognitiveservices-speech-sdk';
+import { SpeechConfig, AudioConfig, SpeechRecognizer, ResultReason } from 'microsoft-cognitiveservices-speech-sdk';
 
 // Replace these with your actual values
 const SPEECH_KEY = import.meta.env.VITE_SPEECH_KEY;
@@ -9,6 +9,7 @@ const SPEECH_REGION = import.meta.env.VITE_SPEECH_REGION;
 export default function Component() {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
+  const [intermediateTranscript, setIntermediateTranscript] = useState("");
   const recognizerRef = useRef(null);
 
   const startRecognition = async () => {
@@ -20,13 +21,17 @@ export default function Component() {
 
     recognizerRef.current.recognizing = (s, e) => {
       console.log(`RECOGNIZING: Text=${e.result.text}`);
-      setTranscript(e.result.text);
+      setIntermediateTranscript(e.result.text);
     };
 
     recognizerRef.current.recognized = (s, e) => {
       if (e.result.reason == ResultReason.RecognizedSpeech) {
         console.log(`RECOGNIZED: Text=${e.result.text}`);
-        setTranscript(prevTranscript => prevTranscript + " " + e.result.text);
+        setTranscript(prevTranscript => {
+          const newTranscript = prevTranscript + (prevTranscript ? " " : "") + e.result.text;
+          setIntermediateTranscript("");
+          return newTranscript;
+        });
       }
       else if (e.result.reason == ResultReason.NoMatch) {
         console.log("NOMATCH: Speech could not be recognized.");
@@ -56,6 +61,7 @@ export default function Component() {
     if (recognizerRef.current) {
       recognizerRef.current.stopContinuousRecognitionAsync();
       setIsRecording(false);
+      setIntermediateTranscript("");
     }
   };
 
@@ -63,6 +69,7 @@ export default function Component() {
     if (isRecording) {
       stopRecognition();
     } else {
+      setTranscript(""); // Reset transcript when starting a new recording
       startRecognition();
     }
   };
@@ -97,7 +104,10 @@ export default function Component() {
                   ? "Recording... Speak into your microphone."
                   : "Click to start recording and converting speech to text."}
               </p>
-              <p className="mt-4 text-gray-100">{transcript}</p>
+              <p className="mt-4 text-gray-100">
+                {transcript}
+                <span className="text-gray-400">{intermediateTranscript}</span>
+              </p>
             </CardContent>
           </Card>
         </div>
