@@ -84,7 +84,7 @@ export default function App() {
     setHighlightedTranscript(GetHighlightedTranscript(transcript, highlights))
     scrollAreaRef.current.scrollTo({
       top: scrollAreaRef.current.scrollHeight,
-      behavior: "smooth"
+      behavior: "smooth",
     })
   }, [highlights, transcript])
 
@@ -148,10 +148,12 @@ export default function App() {
     socket.on("highlight", (highlights) => {
       console.log(`Received highlights: ${highlights}`)
       // highlights["id"] = uuid()
-      const newHighlights = highlights.filter((high) => high.highlight.length > 0).map((high) => {
-        high["id"] = uuid()
-        return high
-      })
+      const newHighlights = highlights
+        .filter((high) => high.highlight.length > 0)
+        .map((high) => {
+          high["id"] = uuid()
+          return high
+        })
 
       setHighlights((prev) => [...prev, ...newHighlights])
     })
@@ -173,6 +175,7 @@ export default function App() {
       stopRecognition()
     } else {
       setTranscript("") // Reset transcript when starting a new recording
+      setHighlights([])
       startRecognition()
     }
   }
@@ -186,7 +189,7 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    console.log(highlights);
+    console.log(highlights)
     setHighlightedTranscript(
       GetHighlightedTranscript(transcript, highlights, setFocused),
     )
@@ -219,7 +222,7 @@ export default function App() {
           </Button>
         </div>
         {/* Transcript */}
-        <Card className="h-[78vh] min-w-[10vw] max-w-[25vw]">
+        <Card className="h-[78vh] min-w-[25vw] max-w-[25vw]">
           <CardHeader>
             <CardTitle>Transcript</CardTitle>
           </CardHeader>
@@ -233,39 +236,38 @@ export default function App() {
 
         {/* Metadata */}
         <Card className="h-[78vh] min-w-[25vw]">
-          {focused}
           <CardHeader>
-            <CardTitle>Metadata</CardTitle>
+            <CardTitle>Insights</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2" ref={scrollAreaRef}>
-            <ScrollArea className="h-[69vh] w-full">
-              {highlights && highlights.map((high, index) => {
-                const type =
-                  high.truthiness < 0.33
-                    ? "false"
-                    : high.truthiness > 0.66
-                    ? "true"
-                    : "context"
-                  
+            <ScrollArea className="h-[69vh] w-full min-w-[25vw]">
+              {highlights &&
+                highlights.map((high, index) => {
+                  const type =
+                    high.truthiness < 0.33
+                      ? "false"
+                      : high.truthiness > 0.66
+                      ? "true"
+                      : "context"
 
-                return (
-                  <Card
-                    key={index}
-                    className={
-                      high.id === focused
-                        ? FocusedCardStyles[type]
-                        : CardStyles[type]
-                    }
-                  >
-                    <CardHeader>
-                      <CardTitle className="">{typeToTitle[type]}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="">{high.content}</p>
-                    </CardContent>
-                  </Card>
-                )
-              })}
+                  return (
+                    <Card
+                      key={index}
+                      className={
+                        high.id === focused
+                          ? FocusedCardStyles[type]
+                          : CardStyles[type]
+                      }
+                    >
+                      <CardHeader>
+                        <CardTitle className="">{typeToTitle[type]}</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="">{high.content}</p>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
             </ScrollArea>
           </CardContent>
         </Card>
