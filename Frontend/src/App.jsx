@@ -240,7 +240,7 @@ export default function App() {
             <CardTitle>Insights</CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-2" ref={scrollAreaRef}>
-            <ScrollArea className="h-[69vh] w-full min-w-[25vw]">
+            <ScrollArea className="h-[69vh] w-full">
               {highlights &&
                 highlights.map((high, index) => {
                   const type =
