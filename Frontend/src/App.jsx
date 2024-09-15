@@ -1,10 +1,9 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useEffect, useRef, useState } from "react"
 import "regenerator-runtime/runtime"
+import { ScrollArea } from "./components/ui/scroll-area"
 import { GetHighlightedTranscript } from "./lib/helpers"
 import { socket } from "./lib/socket"
-import logo from "/actually-logo.jpeg"
-import { ScrollArea } from "./components/ui/scroll-area"
 
 const typeToTitle = {
   false: "Be Careful 🚨",
@@ -138,7 +137,7 @@ export default function App() {
       </div>
       <div className="flex gap-4 justify-center items-center w-screen px-8">
         {/* Video Player 16:9 */}
-        <div className="h-full aspect-video min-h-[280px] rounded-xl">
+        <div className="h-full aspect-video min-w-[43vw] rounded-xl">
           <video
             className="w-full h-full object-cover rounded-xl"
             autoPlay
@@ -147,7 +146,7 @@ export default function App() {
           />
         </div>
         {/* Transcript */}
-        <div className="h-full min-w-[25vw] min-h-[80vh] rounded-lg py-16 px-4">
+        <div className="h-full min-w-[10vw] max-w-[25vw] min-h-[80vh] rounded-lg py-16 px-4">
           <CardHeader>
             <CardTitle>Transcript</CardTitle>
           </CardHeader>
@@ -160,7 +159,7 @@ export default function App() {
           <CardHeader>
             <CardTitle>Metadata</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-4">
+          <CardContent className="flex flex-col gap-2">
             {highlights.map((high, index) => (
               <Card key={index} className={CardStyles[high.type]}>
                 <CardHeader>
