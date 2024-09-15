@@ -1,3 +1,21 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  AudioConfig,
+  CancellationReason,
+  ResultReason,
+  SpeechConfig,
+  SpeechRecognizer,
+} from "microsoft-cognitiveservices-speech-sdk"
+import { useEffect, useRef, useState } from "react"
+import "regenerator-runtime/runtime"
+import { ScrollArea } from "./components/ui/scroll-area"
+import { GetHighlightedTranscript } from "./lib/helpers"
+import { socket } from "./lib/socket"
+import { v4 as uuid } from "uuid"
+import { Button } from "./components/ui/button"
+
+const SPEECH_KEY = import.meta.env.VITE_SPEECH_KEY
+const SPEECH_REGION = import.meta.env.VITE_SPEECH_REGION
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useRef, useState } from "react";
 import "regenerator-runtime/runtime";
@@ -22,7 +40,7 @@ export default function App() {
 
   const idx = useRef(-1);
   const camStream = useRef(null);
-  const mediaRecorderRef = useRef(null);
+  const recognizerRef = useRef(null);
   const [focused, setFocused] = useState();
 
   const [highlights, setHighlights] = useState([
@@ -35,7 +53,7 @@ export default function App() {
   ]);
   const [highlightedTranscript, setHighlightedTranscript] = useState([]);
 
-  var curIteration = useRef(0);
+  const curIteration = useRef(0)
 
   useEffect(() => {
     const getWebcamStream = async () => {
@@ -49,6 +67,24 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    curIteration.current += 1
+    console.log(curIteration.current)
+    console.log(highlights)
+    setHighlightedTranscript(
+      GetHighlightedTranscript(transcript, highlights, curIteration),
+    )
+  }, [highlights, transcript])
+
+  const startRecognition = async () => {
+    const speechConfig = SpeechConfig.fromSubscription(
+      SPEECH_KEY,
+      SPEECH_REGION,
+    )
+    speechConfig.speechRecognitionLanguage = "en-US"
+
+    const audioConfig = AudioConfig.fromDefaultMicrophoneInput()
+    recognizerRef.current = new SpeechRecognizer(speechConfig, audioConfig)
+    socket.connect()
     const startRecording = async () => {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
@@ -56,6 +92,41 @@ export default function App() {
       mediaRecorderRef.current = new MediaRecorder(stream);
       socket.connect();
 
+    recognizerRef.current.recognizing = (s, e) => {
+      setIntermediateTranscript(e.result.text)
+    }
+
+    recognizerRef.current.recognized = (s, e) => {
+      if (e.result.reason == ResultReason.RecognizedSpeech) {
+        setTranscript((prevTranscript) => {
+          const mostRecentSentence = e.result.text
+          const newTranscript =
+            prevTranscript + (prevTranscript ? " " : "") + mostRecentSentence
+          setIntermediateTranscript("")
+          return newTranscript
+        })
+        socket.emit("text", e.result.text)
+      } else if (e.result.reason == ResultReason.NoMatch) {
+        console.log("NOMATCH: Speech could not be recognized.")
+      }
+    }
+
+    recognizerRef.current.canceled = (s, e) => {
+      console.log(`CANCELED: Reason=${e.reason}`)
+      if (e.reason == CancellationReason.Error) {
+        console.log(`"CANCELED: ErrorCode=${e.errorCode}`)
+        console.log(`"CANCELED: ErrorDetails=${e.errorDetails}`)
+        console.log("CANCELED: Did you update the subscription info?")
+      }
+      recognizerRef.current.stopContinuousRecognitionAsync()
+      socket.disconnect()
+    }
+
+    recognizerRef.current.sessionStopped = (s, e) => {
+      console.log("\n    Session stopped event.")
+      recognizerRef.current.stopContinuousRecognitionAsync()
+      socket.disconnect()
+    }
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) {
           socket.emit("audio_data", event.data);
@@ -67,16 +138,15 @@ export default function App() {
         socket.disconnect();
       };
 
-      socket.on("transcript", (transcript) => {
-        console.log("Transcript received:", transcript);
-        const delimeter = transcript.indexOf(",");
-        const text = transcript.substring(delimeter + 1);
-        if (idx.current === -1) {
-          idx.current = parseInt(transcript.substring(0, delimeter));
-        }
+    socket.on("transcript", (transcript) => {
+      const delimeter = transcript.indexOf(",")
+      const text = transcript.substring(delimeter + 1)
+      if (idx.current === -1) {
+        idx.current = parseInt(transcript.substring(0, delimeter))
+      }
 
-        setTranscript((prev) => [...prev, text]);
-      });
+      setTranscript((prev) => [...prev, text])
+    })
 
       socket.on("metadata", (metadata) => {
         console.log("Metadata received:", metadata);
@@ -86,14 +156,30 @@ export default function App() {
           return;
         }
 
-        const newMetadata = metadata.map((m) => {
-          return {
-            ...m,
-            start: m.start - idx.current,
-            end: m.end - idx.current,
-          };
-        });
+      const newHighlights = highlights.map((h) => {
+        return {
+          ...h,
+          start: h.start - idx.current,
+          end: h.end - idx.current,
+        }
+      })
 
+      setHighlights((prev) => [...prev, newHighlights])
+    })
+
+    recognizerRef.current.startContinuousRecognitionAsync()
+    setIsRecording(true)
+  }
+
+  const stopRecognition = async () => {
+    if (recognizerRef.current) {
+      recognizerRef.current.stopContinuousRecognitionAsync()
+      setIsRecording(false)
+      setIntermediateTranscript("")
+    }
+  }
+
+  const toggleRecording = () => {
         setMetadata((prev) => [...prev, newMetadata]);
       });
 
@@ -107,15 +193,20 @@ export default function App() {
     };
 
     if (isRecording) {
-      startRecording();
+      stopRecognition()
     } else {
-      stopRecording();
+      setTranscript("") // Reset transcript when starting a new recording
+      startRecognition()
     }
+  }
 
+  useEffect(() => {
     return () => {
-      stopRecording();
-    };
-  }, [isRecording]);
+      if (recognizerRef.current) {
+        recognizerRef.current.stopContinuousRecognitionAsync()
+      }
+    }
+  }, [])
 
   useEffect(() => {
     console.log(highlights);
@@ -127,6 +218,7 @@ export default function App() {
   return (
     <div className="relative w-screen min-h-screen flex flex-col justify-center items-center px-8">
       <div className="pt-16 flex gap-2 justify-center items-center w-screen">
+        {" "}
         <h3 className="text-3xl font-bold">
           <span className="text-sm">ummm...</span>Actually
         </h3>
@@ -145,6 +237,9 @@ export default function App() {
             muted
             ref={camStream}
           />
+          <Button onClick={toggleRecording} className="my-4">
+            {isRecording ? "Stop Recording" : "Start Recording"}
+          </Button>
         </div>
         {/* Transcript */}
         <Card className="h-[78vh] min-w-[10vw] max-w-[25vw]">

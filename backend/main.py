@@ -6,6 +6,8 @@ import threading
 import re
 from faster_whisper import WhisperModel
 import random
+from checker import check_text
+
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -32,9 +34,9 @@ def handle_audio_data(data):
 def process_raw_queue():
     global index
     print("processing")
+    buffer = b''
     while True:
         raw_data = raw_queue.get()
-        buffer = b''
         target_length = 50  # 1 second at 16kHz
         buffer += raw_data
         while len(buffer) >= target_length:
@@ -60,8 +62,9 @@ def process_raw_queue():
         if buffer:
             raw_queue.put(buffer)
 
-@socketio.on('transcript')
+@socketio.on('text')
 def get_transcript(data):
+    print(data)
     text_queue.put(data)
 
 def process_text_queue():
@@ -76,8 +79,7 @@ def process_text_queue():
         if sentence_count + curr_sentences > 3 or len(accumulated_text) + curr_char_count > 400:
             # Process current accumulated text before it exceeds the limit
             if accumulated_text:
-                result = check_text(accumulated_text)
-                socketio.emit('highlight', result)
+                threading.Thread(target=check_and_emit, args=(accumulated_text,), daemon=True).start()
             
             # Reset for next batch
             accumulated_text = ""
@@ -86,19 +88,11 @@ def process_text_queue():
         accumulated_text += text
         sentence_count += curr_sentences
 
-# Start the text processing thread
-threading.Thread(target=process_text_queue, daemon=True).start()
-
-
-
-@app.route('/check', methods=['POST'])
-def check_text():
-    data = request.json
-    
-    return jsonify(check_text(data['text'])), 200
+def check_and_emit(text):
+    result = check_text(text)
+    socketio.emit('highlight', result)
 
 if __name__ == '__main__':
     # Start the audio processing thread
-    threading.Thread(target=process_raw_queue, daemon=True).start()
     threading.Thread(target=process_text_queue, daemon=True).start()
     socketio.run(app, debug=True, host='127.0.0.1', port=5000)
