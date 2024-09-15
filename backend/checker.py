@@ -62,8 +62,10 @@ def check_text(text):
     chat_session = model.start_chat(
         history=[]
     )
-
-    response = chat_session.send_message(prompt)
+    try:
+        response = chat_session.send_message(prompt)
+    except Exception as e:
+        return [{"truthiness": 0, "highlight": text, "content": "Harmful content detected.", "citations": []}]
     return [json.loads(response.text)]
 
 
