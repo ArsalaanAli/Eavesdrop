@@ -8,6 +8,8 @@ export default function Component() {
   const [isRecording, setIsRecording] = useState(false)
   const [transcript, setTranscript] = useState("")
   const [metadata, setMetadata] = useState("")
+  const [displayText, setDisplayText] = useState('INITIALIZED: ready to test speech...');
+
   const idx = useRef(-1)
 
   const mediaRecorderRef = useRef(null)
@@ -94,8 +96,8 @@ export default function Component() {
   }
 
   async function sttFromMic() {
-    const authToken = process.env.SPEECH_KEY;
-    const region = process.env.SPEECH_REGION;
+    const authToken = import.meta.env.VITE_SPEECH_KEY;
+    const region = import.meta.env.VITE_SPEECH_REGION;
     const speechConfig = SpeechConfig.fromAuthorizationToken(authToken, region);
     speechConfig.speechRecognitionLanguage = 'en-US';
     
