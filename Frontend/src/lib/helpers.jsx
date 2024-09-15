@@ -25,8 +25,6 @@ export const GetHighlightedTranscript = (
 
   highlights.sort((a, b) => a.start - b.start)
 
-  console.log(highlights)
-
   highlights.forEach((highlight, index) => {
     // Add non-highlighted text before the current highlight
     if (highlight.start > lastIndex) {
