@@ -1,31 +1,17 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useEffect, useRef, useState } from "react"
 import "regenerator-runtime/runtime"
-import { GetHighlightedTranscript } from "./lib/helpers"
 import { socket } from "./lib/socket"
 
-export default function App() {
+export default function Component() {
   const [isRecording, setIsRecording] = useState(false)
+  const [transcript, setTranscript] = useState("")
   const [metadata, setMetadata] = useState("")
   const [webcamStream, setWebcamStream] = useState(null)
-  const [transcript, setTranscript] = useState(
-    "test text end more rnadom text here i dont know what to write text",
-  )
-
   const idx = useRef(-1)
   const camStream = useRef(null)
+
   const mediaRecorderRef = useRef(null)
-
-  const [highlights, setHighlights] = useState([
-    { start: 0, end: 10, type: "false" },
-    { start: 11, end: 20, type: "true" },
-    { start: 21, end: 30, type: "context" },
-    { start: 31, end: 40, type: "false" },
-    { start: 41, end: 50, type: "false" },
-  ])
-  const [highlightedTranscript, setHighlightedTranscript] = useState([])
-
-  var curIteration = useRef(0)
 
   useEffect(() => {
     const getWebcamStream = async () => {
@@ -117,14 +103,9 @@ export default function App() {
     }
   }, [isRecording])
 
-  useEffect(() => {
-    curIteration.current += 1
-    console.log(curIteration.current)
-    console.log(highlights)
-    setHighlightedTranscript(
-      GetHighlightedTranscript(transcript, highlights, curIteration),
-    )
-  }, [highlights, transcript])
+  const toggleRecording = () => {
+    setIsRecording((prev) => !prev)
+  }
 
   return (
     <div className="relative w-screen min-h-screen flex justify-center items-center px-8">
@@ -142,26 +123,30 @@ export default function App() {
         <CardHeader>
           <CardTitle>Transcript</CardTitle>
         </CardHeader>
-        <CardContent>{highlightedTranscript}</CardContent>
+        <CardContent>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Vero, dolor
+          nam voluptates veritatis incidunt accusamus eveniet, laboriosam
+          voluptatibus ullam odit adipisci iusto quae quibusdam temporibus
+          nostrum, modi deleniti. Recusandae tenetur a corrupti, quia repellat
+          ipsum ex ipsam consequatur perspiciatis assumenda quo dolores nihil.
+          Quidem corrupti, temporibus error earum eaque doloremque at maxime
+          ipsa. Omnis quas libero illo quod eligendi corrupti natus distinctio
+          dolorum et consequuntur, perspiciatis laborum saepe, maxime sunt!
+          Nesciunt quos totam eaque ipsa, nisi fuga neque doloribus. Dolore
+          aliquam totam dolor accusantium, recusandae nulla cupiditate nemo
+          doloribus neque tenetur quas iure nesciunt at fugiat quis id incidunt
+          voluptatem.
+        </CardContent>
       </div>
       {/* Metadata */}
       <div className="h-full min-w-[25vw] min-h-[100vh] rounded-lg py-16 px-4">
         <CardHeader>
           <CardTitle>Metadata</CardTitle>
         </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          {highlights.map((high, index) => (
-            <Card key={index} className={CardStyles[high.type]}>
-              <CardHeader>
-                <CardTitle className="">Box 1</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="">
-                  This is an empty box. You can add content here.
-                </p>
-              </CardContent>
-            </Card>
-          ))}
+        <CardContent>
+          Lorem ipsum dolor sit, amet consectetur adipisicing elit. Nam
+          provident nulla quae voluptatum est fugit, id saepe consequatur
+          veritatis eius.
         </CardContent>
       </div>
     </div>
@@ -169,71 +154,33 @@ export default function App() {
 
   // return (
   //   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 h-screen w-screen bg-gray-900 text-gray-100">
-  //     <div className="relative bg-black">
-  //       <video
-  //         className="absolute inset-0 w-full h-full object-cover"
-  //         src="https://www.w3schools.com/html/mov_bbb.mp4"
-  //         autoPlay
-  //         loop
-  //         muted
-  //         playsInline
-  //       />
-  //     </div>
-  //     <ScrollArea className="h-full bg-gray-800 border-l border-r border-gray-700 p-6">
-  //       <h2 className="text-2xl font-bold mb-4">Lorem Ipsum</h2>
-  //       {highlightedTranscript}
-  //     </ScrollArea>
+  //     {/* ... existing video and ScrollArea components ... */}
   //     <div className="bg-gray-800 p-4 overflow-auto">
   //       <div className="grid gap-4">
-  //         {highlights.map((high, index) => (
-  //           <Card key={index} className={CardStyles[high.type]}>
-  //             <CardHeader>
-  //               <CardTitle className="text-gray-100">Box 1</CardTitle>
-  //             </CardHeader>
-  //             <CardContent>
-  //               <p className="text-gray-300">
-  //                 This is an empty box. You can add content here.
-  //               </p>
-  //             </CardContent>
-  //           </Card>
-  //         ))}
-
   //         <Card className="bg-gray-700 border-gray-600">
   //           <CardHeader>
-  //             <CardTitle className="text-gray-100">Box 3</CardTitle>
+  //             <CardTitle className="text-gray-100">Audio Streaming</CardTitle>
   //           </CardHeader>
   //           <CardContent>
-  //             <p className="text-gray-300">
-  //               You can add more boxes or other components in this column.
+  //             <button
+  //               onClick={toggleRecording}
+  //               className={`px-4 py-2 rounded ${
+  //                 isRecording ? "bg-red-600" : "bg-green-600"
+  //               }`}
+  //             >
+  //               {isRecording ? "Stop Recording" : "Start Recording"}
+  //             </button>
+  //             <p className="text-gray-300 mt-2">
+  //               {isRecording
+  //                 ? "Recording and streaming audio..."
+  //                 : "Click to start recording and streaming audio."}
   //             </p>
+  //             <p className="text-gray-50 mt-2">{transcript}</p>
   //           </CardContent>
-  //           <Button
-  //             onClick={() => {
-  //               setHighlights(
-  //                 [
-  //                   ...highlights,
-  //                   {
-  //                     start: 17,
-  //                     end: 25,
-  //                     type: "true",
-  //                   },
-  //                 ].sort((a, b) => a.start - b.start),
-  //               )
-  //             }}
-  //           >
-  //             PRESS HERE
-  //           </Button>
   //         </Card>
+  //         {/* ... existing Card components ... */}
   //       </div>
   //     </div>
   //   </div>
   // )
-}
-
-const CardStyles = {
-  false:
-    "border-2 border-red-300 bg-red-100 bg-opacity-50 rounded-lg animate-in",
-  true: "border-2 border-green-300 bg-green-100 bg-opacity-50 rounded-lg animate-in",
-  context:
-    "border-2 border-blue-300 bg-blue-100 bg-opacity-50 rounded-lg animate-in",
 }
