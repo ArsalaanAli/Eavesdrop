@@ -37,8 +37,32 @@ export default function App() {
   const [focused, setFocused] = useState();
 
   const [highlights, setHighlights] = useState([
-    { highlight: "test text end more", id: 1, type: "false" },
-    { highlight: "dont know what to write", id: 2, type: "true" },
+    {
+      highlight: "test text end more",
+      id: 1,
+      type: "false",
+      citations: [
+        "https://www.google.com/search?q=free+gemini+tokens",
+        "https://www.reddit.com/r/Gemini/",
+        "https://twitter.com/search?q=gemini+free+tokens",
+      ],
+      content:
+        "Some Gemini platforms offer a limited number of free tokens for a certain period.",
+      truthiness: 0.5,
+    },
+    {
+      highlight: "dont know what to write",
+      id: 2,
+      type: "true",
+      citations: [
+        "https://www.google.com/search?q=free+gemini+tokens",
+        "https://www.reddit.com/r/Gemini/",
+        "https://twitter.com/search?q=gemini+free+tokens",
+      ],
+      content:
+        "Some Gemini platforms offer a limited number of free tokens for a certain period.",
+      truthiness: 0.5,
+    },
   ]);
 
   const curIteration = useRef(0);
