@@ -6,6 +6,8 @@ import threading
 import re
 from faster_whisper import WhisperModel
 import random
+from checker import check_text
+
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -60,8 +62,9 @@ def process_raw_queue():
         if buffer:
             raw_queue.put(buffer)
 
-@socketio.on('transcript')
+@socketio.on('text')
 def get_transcript(data):
+    print(data)
     text_queue.put(data)
 
 def process_text_queue():
@@ -89,14 +92,7 @@ def check_and_emit(text):
     result = check_text(text)
     socketio.emit('highlight', result)
 
-@app.route('/check', methods=['POST'])
-def check_text():
-    data = request.json
-    
-    return jsonify(check_text(data['text'])), 200
-
 if __name__ == '__main__':
     # Start the audio processing thread
-    threading.Thread(target=process_raw_queue, daemon=True).start()
     threading.Thread(target=process_text_queue, daemon=True).start()
     socketio.run(app, debug=True, host='127.0.0.1', port=5000)
