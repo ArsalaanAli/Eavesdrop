@@ -11,9 +11,9 @@ class Result(BaseModel):
     content: str
     citations: list[str]
 
+
 def groq_validator(json_string: str):
-    load_dotenv()
-    groq = Groq(os.getenv("GROQ_KEY"))
+    groq = Groq(api_key=os.getenv("GROQ_KEY"))
 
     chat_completion = groq.chat.completions.create(
         messages=[
