@@ -204,7 +204,7 @@ export default function App() {
           </Button>
         </div>
         {/* Transcript */}
-        <div className="h-full min-w-[10vw] max-w-[25vw] min-h-[80vh] rounded-lg py-16 px-4">
+        <div className="h-full min-w-[10vw] max-w-[25vw] min-h-[80vh] rounded-lg py-16">
           <CardHeader>
             <CardTitle>Transcript</CardTitle>
           </CardHeader>
@@ -217,7 +217,7 @@ export default function App() {
         </div>
         {/* Metadata */}
         {focused}
-        <div className="h-full min-w-[25vw] min-h-[80vh] rounded-lg py-16 px-4">
+        <div className="h-full min-w-[25vw] min-h-[80vh] rounded-lg py-16">
           <CardHeader>
             <CardTitle>Metadata</CardTitle>
           </CardHeader>
