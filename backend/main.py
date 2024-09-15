@@ -32,9 +32,9 @@ def handle_audio_data(data):
 def process_raw_queue():
     global index
     print("processing")
+    buffer = b''
     while True:
         raw_data = raw_queue.get()
-        buffer = b''
         target_length = 50  # 1 second at 16kHz
         buffer += raw_data
         while len(buffer) >= target_length:
@@ -76,8 +76,7 @@ def process_text_queue():
         if sentence_count + curr_sentences > 3 or len(accumulated_text) + curr_char_count > 400:
             # Process current accumulated text before it exceeds the limit
             if accumulated_text:
-                result = check_text(accumulated_text)
-                socketio.emit('highlight', result)
+                threading.Thread(target=check_and_emit, args=(accumulated_text,), daemon=True).start()
             
             # Reset for next batch
             accumulated_text = ""
@@ -86,10 +85,9 @@ def process_text_queue():
         accumulated_text += text
         sentence_count += curr_sentences
 
-# Start the text processing thread
-threading.Thread(target=process_text_queue, daemon=True).start()
-
-
+def check_and_emit(text):
+    result = check_text(text)
+    socketio.emit('highlight', result)
 
 @app.route('/check', methods=['POST'])
 def check_text():
