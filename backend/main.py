@@ -90,6 +90,7 @@ def process_text_queue():
 
 def check_and_emit(text):
     result = check_text(text)
+    print(result)
     socketio.emit('highlight', result)
 
 if __name__ == '__main__':
