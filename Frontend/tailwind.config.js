@@ -12,32 +12,32 @@ export default {
       keyframes: {
         bgFadeGreen: {
           "0%": {
-            backgroundColor: "rgba(34, 197, 94, 0)",
-            borderColor: "rgba(34, 197, 94, 0)",
+            backgroundColor: "rgba(187, 247, 208, 0)",
+            borderColor: "rgba(187, 247, 208, 0)",
           },
           "100%": {
-            backgroundColor: "rgba(34, 197, 94, 0.3)",
-            borderColor: "rgba(34, 197, 94, 0.3)",
+            backgroundColor: "rgba(187, 247, 208, 0.5)",
+            borderColor: "rgba(187, 247, 208, 1)",
           },
         },
         bgFadeRed: {
           "0%": {
-            backgroundColor: "rgba(239, 68, 68, 0)",
-            borderColor: "rgba(239, 68, 68, 0)",
+            backgroundColor: "rgba(254, 202, 202, 0)",
+            borderColor: "rgba(254, 202, 202, 0)",
           },
           "100%": {
-            backgroundColor: "rgba(239, 68, 68, 0.5)",
-            borderColor: "rgba(239, 68, 68, 0.5)",
+            backgroundColor: "rgba(254, 202, 202, 0.5)",
+            borderColor: "rgba(254, 202, 202, 1)",
           },
         },
         bgFadeBlue: {
           "0%": {
-            backgroundColor: "rgba(59, 130, 246, 0)",
-            borderColor: "rgba(59, 130, 246, 0)",
+            backgroundColor: "rgba(191, 219, 254, 0)",
+            borderColor: "rgba(191, 219, 254, 0)",
           },
           "100%": {
-            backgroundColor: "rgba(59, 130, 246, 0.5)",
-            borderColor: "rgba(59, 130, 246, 0.5)",
+            backgroundColor: "rgba(191, 219, 254, 0.5)",
+            borderColor: "rgba(191, 219, 254, 1)",
           },
         },
       },
@@ -91,4 +91,4 @@ export default {
     },
   },
   plugins: [require("tailwindcss-animate")],
-}
+};
