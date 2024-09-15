@@ -1,5 +1,7 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useRef, useState } from "react";
+import "regenerator-runtime/runtime";
+import { socket } from "./lib/socket";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "./components/ui/button";
 import { GetHighlightedTranscript } from "./lib/helpers";
@@ -25,6 +27,94 @@ export default function App() {
       GetHighlightedTranscript(transcript, highlights, curIteration)
     );
   }, [highlights]);
+
+  const [isRecording, setIsRecording] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [metadata, setMetadata] = useState("");
+  const idx = useRef(-1);
+
+  const mediaRecorderRef = useRef(null);
+
+  useEffect(() => {
+    const startRecording = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorderRef.current = new MediaRecorder(stream);
+      socket.connect();
+
+      mediaRecorderRef.current.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          socket.emit("audio_data", event.data);
+          console.log("Audio data sent:", event.data.size, "bytes");
+        }
+      };
+
+      mediaRecorderRef.current.onstop = () => {
+        socket.disconnect();
+      };
+
+      socket.on("transcript", (transcript) => {
+        console.log("Transcript received:", transcript);
+        const delimeter = transcript.indexOf(",");
+        const text = transcript.substring(delimeter + 1);
+        if (idx.current === -1) {
+          idx.current = parseInt(transcript.substring(0, delimeter));
+        }
+
+        setTranscript((prev) => [...prev, text]);
+      });
+
+      socket.on("metadata", (metadata) => {
+        console.log("Metadata received:", metadata);
+
+        // const sample = {
+        //   highlights: [
+        //     {
+        //       type: "text",
+        //       start: 0,
+        //       end: 15,
+        //     },
+        //   ],
+        // }
+
+        if (idx.current === -1) {
+          setMetadata((prev) => [...prev, metadata]);
+          return;
+        }
+
+        const newMetadata = metadata.map((m) => {
+          return {
+            ...m,
+            start: m.start - idx.current,
+            end: m.end - idx.current,
+          };
+        });
+
+        setMetadata((prev) => [...prev, newMetadata]);
+      });
+
+      mediaRecorderRef.current.start(100);
+    };
+
+    const stopRecording = () => {
+      if (mediaRecorderRef.current) {
+        mediaRecorderRef.current.stop();
+      }
+    };
+
+    if (isRecording) {
+      startRecording();
+    } else {
+      stopRecording();
+    }
+
+    return () => {
+      stopRecording();
+    };
+  }, [isRecording]);
+
+  const toggleRecording = () => {
+    setIsRecording((prev) => !prev);
+  };
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 h-screen w-screen bg-gray-900 text-gray-100">
