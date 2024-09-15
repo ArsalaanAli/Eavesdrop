@@ -80,8 +80,6 @@ export default function App() {
 
   useEffect(() => {
     curIteration.current += 1
-    console.log(curIteration.current)
-    console.log(highlights)
     setHighlightedTranscript(GetHighlightedTranscript(transcript, highlights))
   }, [highlights, transcript])
 
@@ -144,12 +142,8 @@ export default function App() {
 
     socket.on("highlights", (highlights) => {
       highlights["id"] = uuid()
-      if (idx.current === -1) {
-        setHighlights((prev) => [...prev, highlights])
-        return
-      }
 
-      setHighlights((prev) => [...prev, newHighlights])
+      setHighlights((prev) => [...prev, ...highlights])
     })
 
     recognizerRef.current.startContinuousRecognitionAsync()
