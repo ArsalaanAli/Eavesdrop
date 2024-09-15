@@ -34,7 +34,7 @@ export default function App() {
   const idx = useRef(-1)
   const camStream = useRef(null)
   const recognizerRef = useRef(null)
-  const [focused, setFocused] = useState()
+  const [focused, setFocused] = useState(-1)
 
   const [highlights, setHighlights] = useState([
     {
@@ -142,9 +142,13 @@ export default function App() {
 
     socket.on("highlight", (highlights) => {
       console.log(`Received highlights: ${highlights}`)
-      highlights["id"] = uuid()
+      // highlights["id"] = uuid()
+      const newHighlights = highlights.map((high) => {
+        high["id"] = uuid()
+        return high
+      })
 
-      setHighlights((prev) => [...prev, ...highlights])
+      setHighlights((prev) => [...prev, ...newHighlights])
     })
 
     recognizerRef.current.startContinuousRecognitionAsync()
@@ -177,7 +181,7 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    (highlights);
+    console.log(highlights);
     setHighlightedTranscript(
       GetHighlightedTranscript(transcript, highlights, setFocused),
     )
@@ -237,6 +241,7 @@ export default function App() {
                     : high.truthiness > 0.66
                     ? "true"
                     : "context"
+                  
 
                 return (
                   <Card
