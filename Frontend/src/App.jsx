@@ -90,7 +90,7 @@ export default function App() {
           setIntermediateTranscript("")
           return newTranscript
         })
-        socket.emit("audio_data", e.result.text)
+        socket.emit("text", e.result.text)
       } else if (e.result.reason == ResultReason.NoMatch) {
         console.log("NOMATCH: Speech could not be recognized.")
       }
