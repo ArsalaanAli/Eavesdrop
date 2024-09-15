@@ -1,27 +1,27 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AudioConfig,
   CancellationReason,
   ResultReason,
   SpeechConfig,
   SpeechRecognizer,
-} from "microsoft-cognitiveservices-speech-sdk"
-import { useEffect, useRef, useState } from "react"
-import "regenerator-runtime/runtime"
-import { v4 as uuid } from "uuid"
-import { Button } from "./components/ui/button"
-import { ScrollArea } from "./components/ui/scroll-area"
-import { GetHighlightedTranscript } from "./lib/helpers"
-import { socket } from "./lib/socket"
+} from "microsoft-cognitiveservices-speech-sdk";
+import { useEffect, useRef, useState } from "react";
+import "regenerator-runtime/runtime";
+import { v4 as uuid } from "uuid";
+import { Button } from "./components/ui/button";
+import { ScrollArea } from "./components/ui/scroll-area";
+import { GetHighlightedTranscript } from "./lib/helpers";
+import { socket } from "./lib/socket";
 
-const SPEECH_KEY = import.meta.env.VITE_SPEECH_KEY
-const SPEECH_REGION = import.meta.env.VITE_SPEECH_REGION
+const SPEECH_KEY = import.meta.env.VITE_SPEECH_KEY;
+const SPEECH_REGION = import.meta.env.VITE_SPEECH_REGION;
 
 const typeToTitle = {
   false: "Be Careful 🚨",
   true: "This is True ✅",
   context: "Here's Some Context 🧭",
-}
+};
 
 const defaultHighlights = [
   {
@@ -50,150 +50,150 @@ const defaultHighlights = [
       "Some Gemini platforms offer a limited number of free tokens for a certain period.",
     truthiness: 0.5,
   },
-]
+];
 
 export default function App() {
-  const [isRecording, setIsRecording] = useState(false)
-  const [transcript, setTranscript] = useState("")
-  const [intermediateTranscript, setIntermediateTranscript] = useState("")
-  const [highlightedTranscript, setHighlightedTranscript] = useState([])
+  const [isRecording, setIsRecording] = useState(false);
+  const [transcript, setTranscript] = useState("");
+  const [intermediateTranscript, setIntermediateTranscript] = useState("");
+  const [highlightedTranscript, setHighlightedTranscript] = useState([]);
 
-  const idx = useRef(-1)
-  const camStream = useRef(null)
-  const recognizerRef = useRef(null)
-  const [focused, setFocused] = useState(-1)
-  const scrollAreaRef = useRef(null)
-  const [highlights, setHighlights] = useState([])
+  const idx = useRef(-1);
+  const camStream = useRef(null);
+  const recognizerRef = useRef(null);
+  const [focused, setFocused] = useState(-1);
+  const scrollAreaRef = useRef(null);
+  const [highlights, setHighlights] = useState([]);
 
-  const curIteration = useRef(0)
+  const curIteration = useRef(0);
 
   useEffect(() => {
     const getWebcamStream = async () => {
       camStream.current.srcObject = await navigator.mediaDevices.getUserMedia({
         video: true,
-      })
-      camStream.current.play()
-    }
+      });
+      camStream.current.play();
+    };
 
-    getWebcamStream()
-  }, [])
+    getWebcamStream();
+  }, []);
 
   useEffect(() => {
-    if (!(transcript && highlights)) return
-    curIteration.current += 1
-    setHighlightedTranscript(GetHighlightedTranscript(transcript, highlights))
+    if (!(transcript && highlights)) return;
+    curIteration.current += 1;
+    setHighlightedTranscript(GetHighlightedTranscript(transcript, highlights));
     scrollAreaRef.current.scrollTo({
       top: scrollAreaRef.current.scrollHeight,
       behavior: "smooth",
-    })
-  }, [highlights, transcript])
+    });
+  }, [highlights, transcript]);
 
   const startRecognition = async () => {
     const speechConfig = SpeechConfig.fromSubscription(
       SPEECH_KEY,
-      SPEECH_REGION,
-    )
-    speechConfig.speechRecognitionLanguage = "en-US"
+      SPEECH_REGION
+    );
+    speechConfig.speechRecognitionLanguage = "en-US";
 
-    const audioConfig = AudioConfig.fromDefaultMicrophoneInput()
-    recognizerRef.current = new SpeechRecognizer(speechConfig, audioConfig)
-    socket.connect()
+    const audioConfig = AudioConfig.fromDefaultMicrophoneInput();
+    recognizerRef.current = new SpeechRecognizer(speechConfig, audioConfig);
+    socket.connect();
 
     recognizerRef.current.recognizing = (s, e) => {
-      setIntermediateTranscript(e.result.text)
-    }
+      setIntermediateTranscript(e.result.text);
+    };
 
     recognizerRef.current.recognized = (s, e) => {
       if (e.result.reason == ResultReason.RecognizedSpeech) {
         setTranscript((prevTranscript) => {
-          const mostRecentSentence = e.result.text
+          const mostRecentSentence = e.result.text;
           const newTranscript =
-            prevTranscript + (prevTranscript ? " " : "") + mostRecentSentence
-          setIntermediateTranscript("")
-          return newTranscript
-        })
-        socket.emit("text", e.result.text)
+            prevTranscript + (prevTranscript ? " " : "") + mostRecentSentence;
+          setIntermediateTranscript("");
+          return newTranscript;
+        });
+        socket.emit("text", e.result.text);
       } else if (e.result.reason == ResultReason.NoMatch) {
-        console.log("NOMATCH: Speech could not be recognized.")
+        console.log("NOMATCH: Speech could not be recognized.");
       }
-    }
+    };
 
     recognizerRef.current.canceled = (s, e) => {
-      console.log(`CANCELED: Reason=${e.reason}`)
+      console.log(`CANCELED: Reason=${e.reason}`);
       if (e.reason == CancellationReason.Error) {
-        console.log(`"CANCELED: ErrorCode=${e.errorCode}`)
-        console.log(`"CANCELED: ErrorDetails=${e.errorDetails}`)
-        console.log("CANCELED: Did you update the subscription info?")
+        console.log(`"CANCELED: ErrorCode=${e.errorCode}`);
+        console.log(`"CANCELED: ErrorDetails=${e.errorDetails}`);
+        console.log("CANCELED: Did you update the subscription info?");
       }
-      recognizerRef.current.stopContinuousRecognitionAsync()
-      socket.disconnect()
-    }
+      recognizerRef.current.stopContinuousRecognitionAsync();
+      socket.disconnect();
+    };
 
     recognizerRef.current.sessionStopped = (s, e) => {
-      console.log("\n    Session stopped event.")
-      recognizerRef.current.stopContinuousRecognitionAsync()
-      socket.disconnect()
-    }
+      console.log("\n    Session stopped event.");
+      recognizerRef.current.stopContinuousRecognitionAsync();
+      socket.disconnect();
+    };
 
     socket.on("transcript", (transcript) => {
-      const delimeter = transcript.indexOf(",")
-      const text = transcript.substring(delimeter + 1)
+      const delimeter = transcript.indexOf(",");
+      const text = transcript.substring(delimeter + 1);
       if (idx.current === -1) {
-        idx.current = parseInt(transcript.substring(0, delimeter))
+        idx.current = parseInt(transcript.substring(0, delimeter));
       }
 
-      setTranscript((prev) => [...prev, text])
-    })
+      setTranscript((prev) => [...prev, text]);
+    });
 
     socket.on("highlight", (highlights) => {
-      console.log(`Received highlights: ${highlights}`)
+      console.log(`Received highlights: ${highlights}`);
       // highlights["id"] = uuid()
       const newHighlights = highlights
         .filter((high) => high.highlight.length > 0)
         .map((high) => {
-          high["id"] = uuid()
-          return high
-        })
+          high["id"] = uuid();
+          return high;
+        });
 
-      setHighlights((prev) => [...prev, ...newHighlights])
-    })
+      setHighlights((prev) => [...prev, ...newHighlights]);
+    });
 
-    recognizerRef.current.startContinuousRecognitionAsync()
-    setIsRecording(true)
-  }
+    recognizerRef.current.startContinuousRecognitionAsync();
+    setIsRecording(true);
+  };
 
   const stopRecognition = async () => {
     if (recognizerRef.current) {
-      recognizerRef.current.stopContinuousRecognitionAsync()
-      setIsRecording(false)
-      setIntermediateTranscript("")
+      recognizerRef.current.stopContinuousRecognitionAsync();
+      setIsRecording(false);
+      setIntermediateTranscript("");
     }
-  }
+  };
 
   const toggleRecording = () => {
     if (isRecording) {
-      stopRecognition()
+      stopRecognition();
     } else {
-      setTranscript("") // Reset transcript when starting a new recording
-      setHighlights([])
-      startRecognition()
+      setTranscript(""); // Reset transcript when starting a new recording
+      setHighlights([]);
+      startRecognition();
     }
-  }
+  };
 
   useEffect(() => {
     return () => {
       if (recognizerRef.current) {
-        recognizerRef.current.stopContinuousRecognitionAsync()
+        recognizerRef.current.stopContinuousRecognitionAsync();
       }
-    }
-  }, [])
+    };
+  }, []);
 
   useEffect(() => {
-    console.log(highlights)
+    console.log(highlights);
     setHighlightedTranscript(
-      GetHighlightedTranscript(transcript, highlights, setFocused),
-    )
-  }, [highlights, transcript])
+      GetHighlightedTranscript(transcript, highlights, setFocused)
+    );
+  }, [highlights, transcript]);
 
   return (
     <div className="relative w-screen min-h-screen flex flex-col justify-center items-center px-8">
@@ -248,7 +248,7 @@ export default function App() {
                       ? "false"
                       : high.truthiness > 0.66
                       ? "true"
-                      : "context"
+                      : "context";
 
                   return (
                     <Card
@@ -264,16 +264,27 @@ export default function App() {
                       </CardHeader>
                       <CardContent>
                         <p className="">{high.content}</p>
+                        {high.citations.length > 0 ? (
+                          <div>
+                            <br />
+                            <span className="font-bold">Citations</span>
+                            <br />
+                            {high.citations.map((cite) => {
+                              console.log(cite);
+                              <a href={cite.url}>{cite.title}</a>;
+                            })}
+                          </div>
+                        ) : null}
                       </CardContent>
                     </Card>
-                  )
+                  );
                 })}
             </ScrollArea>
           </CardContent>
         </Card>
       </div>
     </div>
-  )
+  );
 }
 
 const CardStyles = {
@@ -282,7 +293,7 @@ const CardStyles = {
   true: "border-2 border-green-300 hover:bg-green-300 cursor-pointer bg-green-100 bg-opacity-50 rounded-lg animate-in transition-all duration-150",
   context:
     "border-2 border-blue-300 hover:bg-blue-300 cursor-pointer bg-blue-100 bg-opacity-50 rounded-lg animate-in transition-all duration-150",
-}
+};
 
 const FocusedCardStyles = {
   false:
@@ -290,4 +301,4 @@ const FocusedCardStyles = {
   true: "border-2 border-green-300 bg-green-300 cursor-pointer bg-opacity-50 rounded-lg animate-in transition-all duration-150",
   context:
     "border-2 border-blue-300 bg-blue-300 cursor-pointer bg-opacity-50 rounded-lg animate-in transition-all duration-150",
-}
+};
