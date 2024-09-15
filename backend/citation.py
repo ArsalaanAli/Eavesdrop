@@ -3,6 +3,7 @@ from groq import Groq
 import dotenv
 import os
 import json
+from bs4 import BeautifulSoup
 
 dotenv.load_dotenv()
 
@@ -55,3 +56,18 @@ def search(query):
         "https://api.bing.microsoft.com/v7.0/search", params=params, headers=headers
     )
     return response.json()
+
+def validate_citations(citations):
+    valid_citations = []
+    for citation in citations:
+        try:
+            response = requests.get(citation, allow_redirects=True, timeout=5)
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.content, 'html.parser')
+                title = soup.title.string if soup.title else "No title found"
+                valid_citations.append({"url": citation, "title": title})
+        except requests.RequestException:
+            continue
+    return valid_citations
+
+# validate_citations(get_citations("Artists are protesting against AI art"))

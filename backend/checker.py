@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import google.generativeai as genai
 from google.ai.generativelanguage_v1beta.types import content
 import json
+from citation import validate_citations, get_citations
 
 def check_text(text):
     load_dotenv()
@@ -64,9 +65,16 @@ def check_text(text):
     )
     try:
         response = chat_session.send_message(prompt)
+        
     except Exception as e:
         return [{"truthiness": 0, "highlight": text, "content": "Harmful content detected.", "citations": []}]
-    return [json.loads(response.text)]
+
+
+    response = json.loads(response.text)
+    # print(response)
+    response["citations"].extend(get_citations(response["highlight"]))
+    response["citations"] = validate_citations(response["citations"])
+    return [response]
 
 
 # response = check_text("generative ai will harm the world. we do not trust generative AI and we will never trust it.")
