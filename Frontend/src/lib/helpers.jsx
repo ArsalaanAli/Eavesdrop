@@ -2,7 +2,8 @@ import React from "react";
 
 export const GetHighlightedTranscript = (
   transcript, // string[]
-  highlights // [[{start, end, type, meta}]
+  highlights, // [[{start, end, type, meta}]
+  setFocused
 ) => {
   const splitScript = [];
 
@@ -22,22 +23,26 @@ export const GetHighlightedTranscript = (
     switch (highlight.type) {
       case "true":
         className =
-          "border-2 border-green-500 bg-green-500 bg-opacity-50 rounded animate-bg-fade-green";
+          "border-2 border-green-300 bg-green-200 bg-opacity-50 rounded animate-bg-fade-green cursor-pointer hover:bg-green-300";
         break;
       case "false":
         className =
-          "border-2 border-red-500 bg-red-500 bg-opacity-50 rounded animate-bg-fade-red";
+          "border-2 border-red-300 bg-red-200 bg-opacity-50 rounded animate-bg-fade-red cursor-pointer hover:bg-red-300";
         break;
       case "context":
         className =
-          "border-2 border-blue-500 bg-blue-500 bg-opacity-50 rounded animate-bg-fade-blue";
+          "border-2 border-blue-300 bg-blue-200 bg-opacity-50 rounded animate-bg-fade-blue cursor-pointer hover:bg-blue-300";
         break;
       default:
         className = "";
     }
 
     result.push(
-      <span key={index} className={className}>
+      <span
+        key={index}
+        className={className}
+        onClick={() => setFocused(highlight.id)}
+      >
         {highlightedText}
       </span>
     );

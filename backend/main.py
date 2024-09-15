@@ -13,6 +13,8 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 raw_queue = Queue()
 audio_queue = Queue()
 
+text_queue = Queue()
+
 index = 0
 
 @socketio.on('connect')
@@ -58,6 +60,36 @@ def process_raw_queue():
         if buffer:
             raw_queue.put(buffer)
 
+@socketio.on('transcript')
+def get_transcript(data):
+    text_queue.put(data)
+
+def process_text_queue():
+    accumulated_text = ""
+    sentence_count = 0
+    
+    while True:
+        text = text_queue.get()
+        curr_sentences = text.count('.') + text.count('!') + text.count('?')
+        curr_char_count = len(text)
+
+        if sentence_count + curr_sentences > 3 or len(accumulated_text) + curr_char_count > 400:
+            # Process current accumulated text before it exceeds the limit
+            if accumulated_text:
+                result = check_text(accumulated_text)
+                socketio.emit('highlight', result)
+            
+            # Reset for next batch
+            accumulated_text = ""
+            sentence_count = 0
+
+        accumulated_text += text
+        sentence_count += curr_sentences
+
+# Start the text processing thread
+threading.Thread(target=process_text_queue, daemon=True).start()
+
+
 
 @app.route('/check', methods=['POST'])
 def check_text():
@@ -68,4 +100,5 @@ def check_text():
 if __name__ == '__main__':
     # Start the audio processing thread
     threading.Thread(target=process_raw_queue, daemon=True).start()
+    threading.Thread(target=process_text_queue, daemon=True).start()
     socketio.run(app, debug=True, host='127.0.0.1', port=5000)
