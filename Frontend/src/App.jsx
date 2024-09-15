@@ -37,14 +37,8 @@ export default function App() {
   const [focused, setFocused] = useState();
 
   const [highlights, setHighlights] = useState([
-    { start: 0, end: 10, id: 1, type: "false" },
-    { start: 11, end: 20, id: 2, type: "true" },
-    { start: 21, end: 30, id: 3, type: "context" },
-    { start: 31, end: 40, id: 4, type: "false" },
-    { start: 41, end: 50, id: 5, type: "false" },
-    { start: 41, end: 50, id: 5, type: "false" },
-    { start: 41, end: 50, id: 5, type: "false" },
-    { start: 41, end: 50, id: 5, type: "false" },
+    { highlight: "test text end more", id: 1, type: "false" },
+    { highlight: "dont know what to write", id: 2, type: "true" },
   ]);
 
   const curIteration = useRef(0);
@@ -64,9 +58,7 @@ export default function App() {
     curIteration.current += 1;
     console.log(curIteration.current);
     console.log(highlights);
-    setHighlightedTranscript(
-      GetHighlightedTranscript(transcript, highlights, curIteration)
-    );
+    setHighlightedTranscript(GetHighlightedTranscript(transcript, highlights));
   }, [highlights, transcript]);
 
   const startRecognition = async () => {
@@ -132,14 +124,6 @@ export default function App() {
         setHighlights((prev) => [...prev, highlights]);
         return;
       }
-
-      const newHighlights = highlights.map((h) => {
-        return {
-          ...h,
-          start: h.start - idx.current,
-          end: h.end - idx.current,
-        };
-      });
 
       setHighlights((prev) => [...prev, newHighlights]);
     });
@@ -212,8 +196,9 @@ export default function App() {
             <CardTitle>Transcript</CardTitle>
           </CardHeader>
           <CardContent>
+            {console.log(highlightedTranscript)}
             <ScrollArea className="h-[69vh] w-full">
-              {transcript}
+              {highlightedTranscript}
               <span className="text-gray-400">{intermediateTranscript}</span>
             </ScrollArea>
           </CardContent>
