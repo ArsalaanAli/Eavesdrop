@@ -5,6 +5,7 @@ export const GetHighlightedTranscript = (
   highlights, // [[{start, end, type, meta}]
   setFocused
 ) => {
+  if (!highlights) return
   const splitScript = [];
 
   let lastIndex = 0;
@@ -24,7 +25,8 @@ export const GetHighlightedTranscript = (
     });
 
     highlights.sort((a, b) => a.start - b.start);
-  } catch {}
+  } catch {
+  }
   highlights.forEach((highlight, index) => {
     // Add non-highlighted text before the current highlight
     if (highlight.start > lastIndex) {

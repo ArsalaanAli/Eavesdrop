@@ -23,11 +23,38 @@ const typeToTitle = {
   context: "Here's Some Context 🧭",
 }
 
+const defaultHighlights = [
+  {
+    highlight: "test text end more",
+    id: 1,
+    type: "false",
+    citations: [
+      "https://www.google.com/search?q=free+gemini+tokens",
+      "https://www.reddit.com/r/Gemini/",
+      "https://twitter.com/search?q=gemini+free+tokens",
+    ],
+    content:
+      "Some Gemini platforms offer a limited number of free tokens for a certain period.",
+    truthiness: 0.5,
+  },
+  {
+    highlight: "dont know what to write",
+    id: 2,
+    type: "true",
+    citations: [
+      "https://www.google.com/search?q=free+gemini+tokens",
+      "https://www.reddit.com/r/Gemini/",
+      "https://twitter.com/search?q=gemini+free+tokens",
+    ],
+    content:
+      "Some Gemini platforms offer a limited number of free tokens for a certain period.",
+    truthiness: 0.5,
+  },
+]
+
 export default function App() {
   const [isRecording, setIsRecording] = useState(false)
-  const [transcript, setTranscript] = useState(
-    "test text end more rnadom text here i dont know what to write text",
-  )
+  const [transcript, setTranscript] = useState("")
   const [intermediateTranscript, setIntermediateTranscript] = useState("")
   const [highlightedTranscript, setHighlightedTranscript] = useState([])
 
@@ -35,35 +62,8 @@ export default function App() {
   const camStream = useRef(null)
   const recognizerRef = useRef(null)
   const [focused, setFocused] = useState(-1)
-
-  const [highlights, setHighlights] = useState([
-    {
-      highlight: "test text end more",
-      id: 1,
-      type: "false",
-      citations: [
-        "https://www.google.com/search?q=free+gemini+tokens",
-        "https://www.reddit.com/r/Gemini/",
-        "https://twitter.com/search?q=gemini+free+tokens",
-      ],
-      content:
-        "Some Gemini platforms offer a limited number of free tokens for a certain period.",
-      truthiness: 0.5,
-    },
-    {
-      highlight: "dont know what to write",
-      id: 2,
-      type: "true",
-      citations: [
-        "https://www.google.com/search?q=free+gemini+tokens",
-        "https://www.reddit.com/r/Gemini/",
-        "https://twitter.com/search?q=gemini+free+tokens",
-      ],
-      content:
-        "Some Gemini platforms offer a limited number of free tokens for a certain period.",
-      truthiness: 0.5,
-    },
-  ])
+  const scrollAreaRef = useRef(null)
+  const [highlights, setHighlights] = useState([])
 
   const curIteration = useRef(0)
 
@@ -79,8 +79,13 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    if (!(transcript && highlights)) return
     curIteration.current += 1
     setHighlightedTranscript(GetHighlightedTranscript(transcript, highlights))
+    scrollAreaRef.current.scrollTo({
+      top: scrollAreaRef.current.scrollHeight,
+      behavior: "smooth"
+    })
   }, [highlights, transcript])
 
   const startRecognition = async () => {
@@ -143,7 +148,7 @@ export default function App() {
     socket.on("highlight", (highlights) => {
       console.log(`Received highlights: ${highlights}`)
       // highlights["id"] = uuid()
-      const newHighlights = highlights.map((high) => {
+      const newHighlights = highlights.filter((high) => high.highlight.length > 0).map((high) => {
         high["id"] = uuid()
         return high
       })
@@ -232,9 +237,9 @@ export default function App() {
           <CardHeader>
             <CardTitle>Metadata</CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col gap-2">
+          <CardContent className="flex flex-col gap-2" ref={scrollAreaRef}>
             <ScrollArea className="h-[69vh] w-full">
-              {highlights.map((high, index) => {
+              {highlights && highlights.map((high, index) => {
                 const type =
                   high.truthiness < 0.33
                     ? "false"
