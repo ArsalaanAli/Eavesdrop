@@ -1,36 +1,29 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useEffect, useRef, useState } from "react"
 import "regenerator-runtime/runtime"
+import { v4 as uuid } from "uuid"
 import { ScrollArea } from "./components/ui/scroll-area"
 import { GetHighlightedTranscript } from "./lib/helpers"
 import { socket } from "./lib/socket"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect, useRef, useState } from "react";
-import "regenerator-runtime/runtime";
-import { GetHighlightedTranscript } from "./lib/helpers";
-import { socket } from "./lib/socket";
-import logo from "/actually-logo.jpeg";
-import { v4 as uuid } from "uuid";
-import { ScrollArea } from "./components/ui/scroll-area";
 
 const typeToTitle = {
   false: "Be Careful 🚨",
   true: "This is True ✅",
   context: "Here's Some Context 🧭",
-};
+}
 
 export default function App() {
-  const [isRecording, setIsRecording] = useState(false);
-  const [metadata, setMetadata] = useState("");
-  const [webcamStream, setWebcamStream] = useState(null);
+  const [isRecording, setIsRecording] = useState(false)
+  const [metadata, setMetadata] = useState("")
+  const [webcamStream, setWebcamStream] = useState(null)
   const [transcript, setTranscript] = useState(
-    "test text end more rnadom text here i dont know what to write text"
-  );
+    "test text end more rnadom text here i dont know what to write text",
+  )
 
-  const idx = useRef(-1);
-  const camStream = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const [focused, setFocused] = useState();
+  const idx = useRef(-1)
+  const camStream = useRef(null)
+  const mediaRecorderRef = useRef(null)
+  const [focused, setFocused] = useState()
 
   const [highlights, setHighlights] = useState([
     { start: 0, end: 10, id: 1, type: "false" },
@@ -38,58 +31,58 @@ export default function App() {
     { start: 21, end: 30, id: 3, type: "context" },
     { start: 31, end: 40, id: 4, type: "false" },
     { start: 41, end: 50, id: 5, type: "false" },
-  ]);
-  const [highlightedTranscript, setHighlightedTranscript] = useState([]);
+  ])
+  const [highlightedTranscript, setHighlightedTranscript] = useState([])
 
-  var curIteration = useRef(0);
+  var curIteration = useRef(0)
 
   useEffect(() => {
     const getWebcamStream = async () => {
       camStream.current.srcObject = await navigator.mediaDevices.getUserMedia({
         video: true,
-      });
-      camStream.current.play();
-    };
+      })
+      camStream.current.play()
+    }
 
-    getWebcamStream();
-  }, []);
+    getWebcamStream()
+  }, [])
 
   useEffect(() => {
     const startRecording = async () => {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
-      });
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      socket.connect();
+      })
+      mediaRecorderRef.current = new MediaRecorder(stream)
+      socket.connect()
 
       mediaRecorderRef.current.ondataavailable = (event) => {
         if (event.data.size > 0) {
-          socket.emit("audio_data", event.data);
-          console.log("Audio data sent:", event.data.size, "bytes");
+          socket.emit("audio_data", event.data)
+          console.log("Audio data sent:", event.data.size, "bytes")
         }
-      };
+      }
 
       mediaRecorderRef.current.onstop = () => {
-        socket.disconnect();
-      };
+        socket.disconnect()
+      }
 
       socket.on("transcript", (transcript) => {
-        console.log("Transcript received:", transcript);
-        const delimeter = transcript.indexOf(",");
-        const text = transcript.substring(delimeter + 1);
+        console.log("Transcript received:", transcript)
+        const delimeter = transcript.indexOf(",")
+        const text = transcript.substring(delimeter + 1)
         if (idx.current === -1) {
-          idx.current = parseInt(transcript.substring(0, delimeter));
+          idx.current = parseInt(transcript.substring(0, delimeter))
         }
 
-        setTranscript((prev) => [...prev, text]);
-      });
+        setTranscript((prev) => [...prev, text])
+      })
 
       socket.on("metadata", (metadata) => {
-        console.log("Metadata received:", metadata);
-        metadata["id"] = uuid();
+        console.log("Metadata received:", metadata)
+        metadata["id"] = uuid()
         if (idx.current === -1) {
-          setMetadata((prev) => [...prev, metadata]);
-          return;
+          setMetadata((prev) => [...prev, metadata])
+          return
         }
 
         const newMetadata = metadata.map((m) => {
@@ -97,38 +90,38 @@ export default function App() {
             ...m,
             start: m.start - idx.current,
             end: m.end - idx.current,
-          };
-        });
+          }
+        })
 
-        setMetadata((prev) => [...prev, newMetadata]);
-      });
+        setMetadata((prev) => [...prev, newMetadata])
+      })
 
-      mediaRecorderRef.current.start(100);
-    };
+      mediaRecorderRef.current.start(100)
+    }
 
     const stopRecording = () => {
       if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.stop();
+        mediaRecorderRef.current.stop()
       }
-    };
+    }
 
     if (isRecording) {
-      startRecording();
+      startRecording()
     } else {
-      stopRecording();
+      stopRecording()
     }
 
     return () => {
-      stopRecording();
-    };
-  }, [isRecording]);
+      stopRecording()
+    }
+  }, [isRecording])
 
   useEffect(() => {
-    console.log(highlights);
+    console.log(highlights)
     setHighlightedTranscript(
-      GetHighlightedTranscript(transcript, highlights, setFocused)
-    );
-  }, [highlights, transcript]);
+      GetHighlightedTranscript(transcript, highlights, setFocused),
+    )
+  }, [highlights, transcript])
 
   return (
     <div className="relative w-screen min-h-screen flex flex-col justify-center items-center px-8">
@@ -191,7 +184,7 @@ export default function App() {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 const CardStyles = {
@@ -200,7 +193,7 @@ const CardStyles = {
   true: "border-2 border-green-300 hover:bg-green-300 cursor-pointer bg-green-100 bg-opacity-50 rounded-lg animate-in transition-all duration-150",
   context:
     "border-2 border-blue-300 hover:bg-blue-300 cursor-pointer bg-blue-100 bg-opacity-50 rounded-lg animate-in transition-all duration-150",
-};
+}
 
 const FocusedCardStyles = {
   false:
@@ -208,4 +201,4 @@ const FocusedCardStyles = {
   true: "border-2 border-green-300 bg-green-300 cursor-pointer bg-opacity-50 rounded-lg animate-in transition-all duration-150",
   context:
     "border-2 border-blue-300 bg-blue-300 cursor-pointer bg-opacity-50 rounded-lg animate-in transition-all duration-150",
-};
+}
