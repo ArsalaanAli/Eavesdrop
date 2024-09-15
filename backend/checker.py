@@ -2,6 +2,7 @@ import os
 from dotenv import load_dotenv
 import google.generativeai as genai
 from google.ai.generativelanguage_v1beta.types import content
+import json
 
 def check_text(text):
     load_dotenv()
@@ -53,7 +54,7 @@ def check_text(text):
     }
 
     model = genai.GenerativeModel(
-        model_name="gemini-1.5-pro",
+        model_name="gemini-1.5-flash",
         generation_config=generation_config,
     )
 
@@ -63,7 +64,7 @@ def check_text(text):
     )
 
     response = chat_session.send_message(prompt)
-    print(response.text)
+    return [json.loads(response.text)]
 
 
 # response = check_text("generative ai will harm the world. we do not trust generative AI and we will never trust it.")
