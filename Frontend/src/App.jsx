@@ -247,9 +247,7 @@ export default function App() {
                     }
                   >
                     <CardHeader>
-                      <CardTitle className="">
-                        {typeToTitle[high.type]}
-                      </CardTitle>
+                      <CardTitle className="">{typeToTitle[type]}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <p className="">{high.content}</p>
