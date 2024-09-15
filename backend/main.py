@@ -4,9 +4,10 @@ from queue import Queue
 import numpy as np
 import threading
 import re
-from faster_whisper import WhisperModel
 import random
 from checker import check_text
+from rag import rag_model
+from validator import groq_validator
 
 
 app = Flask(__name__)
@@ -89,11 +90,12 @@ def process_text_queue():
         sentence_count += curr_sentences
 
 def check_and_emit(text):
-    result = check_text(text)
-    print(result)
-    socketio.emit('highlight', result)
+    result = rag_model(text)
+    result_validated = groq_validator(result)
+    print(result_validated)
+    socketio.emit('highlight', result_validated)
 
 if __name__ == '__main__':
     # Start the audio processing thread
     threading.Thread(target=process_text_queue, daemon=True).start()
-    socketio.run(app, debug=True, host='127.0.0.1', port=5000)
+    socketio.run(app, debug=True, host='127.0.0.1', port=1234)

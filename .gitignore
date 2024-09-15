@@ -1,2 +1,4 @@
 backend/ven
 .env
+.vscode
+.venv
