@@ -20,15 +20,14 @@ export default function Component() {
     recognizerRef.current = new SpeechRecognizer(speechConfig, audioConfig);
 
     recognizerRef.current.recognizing = (s, e) => {
-      console.log(`RECOGNIZING: Text=${e.result.text}`);
       setIntermediateTranscript(e.result.text);
     };
 
     recognizerRef.current.recognized = (s, e) => {
       if (e.result.reason == ResultReason.RecognizedSpeech) {
-        console.log(`RECOGNIZED: Text=${e.result.text}`);
         setTranscript(prevTranscript => {
-          const newTranscript = prevTranscript + (prevTranscript ? " " : "") + e.result.text;
+          const mostRecentSentence = e.result.text;
+          const newTranscript = prevTranscript + (prevTranscript ? " " : "") + mostRecentSentence;
           setIntermediateTranscript("");
           return newTranscript;
         });
@@ -104,10 +103,13 @@ export default function Component() {
                   ? "Recording... Speak into your microphone."
                   : "Click to start recording and converting speech to text."}
               </p>
-              <p className="mt-4 text-gray-100">
-                {transcript}
-                <span className="text-gray-400">{intermediateTranscript}</span>
-              </p>
+              <div className="mt-4">
+                <h3 className="text-lg font-semibold text-gray-100">Transcript:</h3>
+                <p className="text-gray-100">
+                  {transcript}
+                  <span className="text-gray-400">{intermediateTranscript}</span>
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
