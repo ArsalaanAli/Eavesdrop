@@ -18,7 +18,7 @@ const typeToTitle = {
   false: "Be Careful 🚨",
   true: "This is True ✅",
   context: "Here's Some Context 🧭",
-}
+};
 
 export default function App() {
   const [isRecording, setIsRecording] = useState(false)
@@ -47,12 +47,12 @@ export default function App() {
     const getWebcamStream = async () => {
       camStream.current.srcObject = await navigator.mediaDevices.getUserMedia({
         video: true,
-      })
-      camStream.current.play()
-    }
+      });
+      camStream.current.play();
+    };
 
-    getWebcamStream()
-  }, [])
+    getWebcamStream();
+  }, []);
 
   useEffect(() => {
     curIteration.current += 1
@@ -89,7 +89,7 @@ export default function App() {
       } else if (e.result.reason == ResultReason.NoMatch) {
         console.log("NOMATCH: Speech could not be recognized.")
       }
-    }
+    };
 
     recognizerRef.current.canceled = (s, e) => {
       console.log(`CANCELED: Reason=${e.reason}`)
@@ -136,11 +136,11 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    console.log(highlights)
+    console.log(highlights);
     setHighlightedTranscript(
-      GetHighlightedTranscript(transcript, highlights, setFocused),
-    )
-  }, [highlights, transcript])
+      GetHighlightedTranscript(transcript, highlights, setFocused)
+    );
+  }, [highlights, transcript]);
 
   return (
     <div className="relative w-screen min-h-screen flex flex-col justify-center items-center px-8">
@@ -277,7 +277,7 @@ export default function App() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 const CardStyles = {
@@ -286,7 +286,7 @@ const CardStyles = {
   true: "border-2 border-green-300 hover:bg-green-300 cursor-pointer bg-green-100 bg-opacity-50 rounded-lg animate-in transition-all duration-150",
   context:
     "border-2 border-blue-300 hover:bg-blue-300 cursor-pointer bg-blue-100 bg-opacity-50 rounded-lg animate-in transition-all duration-150",
-}
+};
 
 const FocusedCardStyles = {
   false:
@@ -294,4 +294,4 @@ const FocusedCardStyles = {
   true: "border-2 border-green-300 bg-green-300 cursor-pointer bg-opacity-50 rounded-lg animate-in transition-all duration-150",
   context:
     "border-2 border-blue-300 bg-blue-300 cursor-pointer bg-opacity-50 rounded-lg animate-in transition-all duration-150",
-}
+};
