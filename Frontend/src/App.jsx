@@ -140,7 +140,8 @@ export default function App() {
       setTranscript((prev) => [...prev, text])
     })
 
-    socket.on("highlights", (highlights) => {
+    socket.on("highlight", (highlights) => {
+      console.log(`Received highlights: ${highlights}`)
       highlights["id"] = uuid()
 
       setHighlights((prev) => [...prev, ...highlights])
@@ -176,7 +177,7 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    console.log(highlights)
+    (highlights);
     setHighlightedTranscript(
       GetHighlightedTranscript(transcript, highlights, setFocused),
     )
